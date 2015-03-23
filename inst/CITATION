@@ -1,0 +1,19 @@
+citHeader("To cite hdp in publications use:")
+
+citEntry(entry = "Article",
+         title        = "Hierarchical Dirichlet Processes",
+         author       = personList(as.person("Yee Whye Teh"),
+                                   as.person("Michael I. Jordan"),
+                                   as.person("Matthew J. Beal"),
+                                   as.person("David M. Blei")),
+         journal      = "Journal of the American Statistical Association",
+         year         = "2006",
+         volume       = "101",
+         number       = "476",
+         pages        = "1566--1581",
+         
+         textVersion  =
+           paste("Yee Whye Teh, Michael I. Jordan, Matthew J. Beal, David M. Blei (2006)",
+                 "Hierarchical Dirichlet Processes.",
+                 "Journal of the American Statistical Association 101(476):1266--1581 ")
+)
