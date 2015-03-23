@@ -16,5 +16,7 @@ Description: This R package allows users to model categorical count data with a
     http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz
 License: To read copyright info, run file.show(system.file("COPYRIGHTS.txt",
     package = "hdp"))
+URL: https://github.com/nicolaroberts/hdp
+BugReports: https://github.com/nicolaroberts/hdp/issues
 Imports:
     lsa
