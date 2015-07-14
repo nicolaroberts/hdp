@@ -60,16 +60,18 @@ hdp_extract_signatures <- function(output, prop.explained, cos.merge){
   classqq_3 <- lapply(classqq_1, merge_cols, class_label)
   
   # Step (4)
-  # Rename overall signatures
+  # Rename overall signatures, ordered by number of data points (on average) assigned to each sig
+  colorder <- c(1, setdiff(order(rowMeans(sapply(classqq_3, colSums)), decreasing=T), 1))
+  
   rename <- function(matrix){
-    matrix <- matrix[,order(as.numeric(colnames(matrix)))]
+    matrix <- matrix[,colorder]
     colnames(matrix) <- 0:(ncol(matrix)-1)
     return(matrix)
   }
   classqq_ans <- lapply(classqq_3, rename)
   
   transformation <- sort(unique(class_label)) #old names
-  names(transformation) <- as.numeric(colnames(classqq_ans[[1]])) #new names
+  names(transformation) <- order(colorder)-1 #new names
   class_label_ans <- class_label
   for (j in 1:length(transformation)){
     class_label_ans[which(class_label==transformation[j])] <- names(transformation)[j]
