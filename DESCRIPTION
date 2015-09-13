@@ -1,22 +1,24 @@
 Package: hdp
-Type: Package
-Title: Hierarchical Dirichlet Process for Categorical Count Data
-Version: 0.0.1
-Date: 2015-03-23
-Author: Nicola Roberts
-Maintainer: Nicola Roberts <nr3@sanger.ac.uk>
-Description: This R package allows users to model categorical count data with a
-    hierarchical tree of Dirichlet Processes. It includes functions to
-    initialise a HDP of any shape, perform Gibbs sampling of the posterior
-    distribution, and analyse the output. The underlying mathematical theory is
+Title: Hierarchical Dirichlet Process for categorical count data
+Version: 0.0.2
+Authors@R: c(person("Nicola", "Roberts",
+  email="nr3@sanger.ac.uk", role=c("aut", "cre")),
+  person("Yee Whye", "Teh", role=c("aut", "cph"),
+  comment="MATLAB and C original, http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz"))
+Depends: R(>= 3.1)
+Imports: lsa, methods, flexclust, coda
+LazyData: true
+Description: Model categorical count data with a hierarchical tree of Dirichlet
+    Processes. Includes functions to initialise a HDP with a custom tree
+    structure, perform Gibbs sampling of the posterior distribution,
+    and analyse the output. The underlying mathematical theory is
     described by Teh et al. (Hierarchical Dirichlet Processes,
     Journal of the American Statistical Association, 2006, 101:476). This R
     package was adapted from open source MATLAB and C code written by Yee Whye
     Teh and available here
-    http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz
-License: To read copyright info, run file.show(system.file("COPYRIGHTS.txt",
-    package = "hdp"))
+    http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz.
+License: file LICENSE
 URL: https://github.com/nicolaroberts/hdp
 BugReports: https://github.com/nicolaroberts/hdp/issues
-Imports:
-    lsa
+Suggests: testthat, SomaticCancerAlterations, BSgenome.Hsapiens.UCSC.hg19,
+  GenomicRanges, Biostrings, RColorBrewer
