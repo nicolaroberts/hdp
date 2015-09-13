@@ -11,10 +11,10 @@ randnumtable <- function(weights,maxtable){
     if (maxtable > 0){
       mm <- 1:maxtable
       stirnum <- stirling(maxtable)
-      for (jj in which(J==ii)){
+      for (jj in which(J == ii)){
         clik <- mm * weights[jj]
-        clik <- cumsum(stirnum * exp(clik-max(clik)))
-        numtable[jj] <- 1+sum(runif(1)*clik[maxtable] > clik)
+        clik <- cumsum(stirnum * exp(clik - max(clik)))
+        numtable[jj] <- 1 + sum(runif(1) * clik[maxtable] > clik)
       }
     }
   }

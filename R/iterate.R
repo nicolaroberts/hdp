@@ -1,10 +1,11 @@
-# posterior MCMC sampling for hdp data struct
+# posterior MCMC sampling for hdp
 # returns an R list with two elements: 
-# the updated hdp data struct, and
+# the updated hdp state as a list, and
 # the vector of likelihoods for these iterations
 
 #' @useDynLib hdp hdpMultinomial_iterate
-iterate <- function(hdp,numiter,doconparam,dolik,dodebug){
-  out <- .Call(hdpMultinomial_iterate, hdp, numiter, doconparam, dolik, dodebug, PACKAGE='hdp')
+iterate <- function(hdplist, numiter, cpiter, verbosity){
+  out <- .Call(hdpMultinomial_iterate, hdplist, numiter, cpiter,
+               dolik=1, verbosity, PACKAGE="hdp")
   return(out)
 }

@@ -1,19 +1,16 @@
+# extract key info from this hdp iteration (list class)
+# numclass = number of clusters
+# classqq = category vs cluster counts overall (matrix)
+# classnd = dp vs cluster counts (matrix)
+# beta = dp vs cluster weights (matrix)
+# alpha = conparam values (vector)
+
 hdp_getstate <- function(hdp){
   hdpstate <- list()
   hdpstate$numclass <- hdp$base$numclass
   hdpstate$classqq  <- hdp$base$classqq
-  hdpstate$classnd  <- vector('list',hdp$numdp)
-  hdpstate$beta     <- vector('list',hdp$numdp)
-  hdpstate$alpha    <- rep(0,hdp$numconparam)
-
-  for (jj in 1:hdp$numdp){
-    hdpstate$classnd[[jj]] <- hdp$dp[[jj]]$classnd
-    hdpstate$beta[[jj]]    <- hdp$dp[[jj]]$beta
-  }
-  for (cp in 1:hdp$numconparam){
-    hdpstate$alpha[cp]   <- hdp$conparam[[cp]]$alpha
-  }
+  hdpstate$classnd  <- t(sapply(hdp$dp, function(x) x$classnd))
+  hdpstate$beta     <- t(sapply(hdp$dp, function(x) x$beta))
+  hdpstate$alpha    <- sapply(hdp$conparam, function(x) x$alpha)
   return(hdpstate)
 }
-
-

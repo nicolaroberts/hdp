@@ -1,26 +1,16 @@
-# func to check ppindex (indicies of parental processes)
-# must be non-negative integer, and a smaller index than the DP itself. 
-check_ppindex <- function(numdp,ppindex){
-  if (any(ppindex<0) | any(ppindex>=1:numdp) | any(ppindex!=ceiling(ppindex))){
-    stop('Not valid ppindex')
+# is any non-empty slot negative?
+is.any.slot.negative <- function(object){
+  slot_lengths <- sapply(slotNames(object), function(x) length(slot(object, x)))
+  slots_not_empty <- which(slot_lengths >= 1)
+  for (slotname in names(slots_not_empty)) {
+    value <- slot(object, slotname)
+    if (is.atomic(value)){
+      if (any(value < 0)) return(TRUE)
+    }
   }
+  return(FALSE)
 }
 
-# func to check dpindex vector (indicies of dirichlet processes)
-# must be non-negative integers no larger than the total number of DPs, with no duplicates
-check_dpindex <- function(numdp,dpindex){
-  if (any(dpindex<=0) | any(dpindex>numdp) | any(dpindex!=ceiling(dpindex)) | length(dpindex)!=length(unique(dpindex))){
-    stop('Not valid dpindex')
-  }
-}
-
-# func to check cpindex vector (indicies of concentration parameters)
-# must be positive integers no larger than the total number of concentration parameters 
-check_cpindex <- function(numconparam,cpindex){
-  if (any(cpindex<1) | any(cpindex>numconparam) | any(cpindex!=ceiling(cpindex))) {
-    stop('Not valid cpindex')
-  }
-}
 
 # func to initialise classqq matrix
 # creates a 1-column matrix of zeros (one for every mutation type)
@@ -32,11 +22,13 @@ newclass <- function(hh){
 }
 
 # func to add data from one sample to the classqq matrix
-# qq is the classqq matrix, counts the number of data items of each mutation type in each class
+# qq is the classqq matrix, counts the number of data items of 
+#   each mutation type in each class
 # cc is a numeric vector of class allocations for each data point in one sample
 # ss is a numeric vector of data observations (the mutation types) in one sample
 additems <- function(qq,cc,ss){
   sc <- table(factor(ss, levels=1:nrow(qq)), factor(cc, levels=1:ncol(qq)))
   qq <- qq + sc
+  qq <- matrix(qq, nrow=dim(qq)[1], ncol=dim(qq)[2])
   return(qq)
 }
