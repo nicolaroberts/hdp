@@ -5,7 +5,7 @@
 #'  Only used for hdpSampleChain as this can be calculated automatically for hdpMultiChain objects.
 #' @return A hdpSampleChain or hdpSampleMulti object updated with component information
 #' @aliases hdp_extract_components
-#' @include hdp_extract_comp_multi.R hdp_extract_comp_single.R
+#' @include hdp_extract_comp_single.R hdp_extract_comp_multi.R
 #' @export
 #' @examples
 #' hdp_extract_components(tcga_example_chain)
