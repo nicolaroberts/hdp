@@ -1,42 +1,56 @@
 #' Plot number of data items assigned to each component for each posterior sample.
 #'
-#' @param chain A hdpSampleChain object including output from \code{\link{hdp_extract_components}}
+#' @param sample A hdpSampleChain or hdpSampleMulti object including
+#'  output from \code{\link{hdp_extract_components}}
 #' @param legend Logical - should a legend be included? (default TRUE)
-#' @param col_early Color ramp side for early posterior samples
-#' @param col_late Color ramp side for late posterior samples
+#' @param col_a Color ramp side for early posterior samples (if hdpSampleChain) or first chain (if hdpSampleMulti)
+#' @param col_b Color ramp side for late posterior samples (if hdpSampleChain) or last chain (if hdpSampleMulti)
 #' @param ... Other arguments to plot
-#'  @seealso \code{\link{hdp_extract_components}},
-#'  \code{\link{plot_comp_distn_bar}}, \code{\link{plot_dp_comp_exposure}}
 #' @export
 #' @examples
-#' tcga_example_comp <- hdp_extract_components(tcga_example_chain)
-#' plot_comp_size(tcga_example_comp, bty="L")
+#' tcga_example_chain <- hdp_extract_components(tcga_example_chain)
+#' plot_comp_size(tcga_example_chain, bty="L")
+#'
+#' # not run (slow):
+#' # tcga_example_multi <- hdp_extract_components(tcga_example_multi)
+#' # plot_comp_size(tcga_example_multi, bty="L")
+#'
 
-plot_comp_size <- function(chain, legend=TRUE, col_early="hotpink",
-                           col_late="skyblue3", ...){
+plot_comp_size <- function(sample, legend=TRUE, col_a="hotpink",
+                           col_b="skyblue3", ...){
 
   # input checks
-  if (class(chain) != "hdpSampleChain") {
-    stop("chain must have class hdpSampleChain")
+  if (!class(sample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
+    stop("sample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(chain)) stop("chain not a valid hdpSampleChain object")
-  if (length(comp_categ_counts(chain)) == 0) {
-    stop("No component info for chain. First run hdp_extract_components")
+  if (!validObject(sample)) stop("sample not valid")
+  if (length(comp_categ_counts(sample)) == 0) {
+    stop("No component info for sample. First run hdp_extract_component")
   }
   if(class(legend) != "logical") stop("legend must be TRUE or FALSE")
 
 
-  sums <- t(sapply(chain@comp_categ_counts, rowSums))
+  sums <- t(sapply(comp_categ_counts(sample), rowSums))
 
   # colour ramp across posterior samples
-  cols <- colorRampPalette(colors=c(col_early, col_late))
+  cols <- colorRampPalette(colors=c(col_a, col_b))
 
-  matplot(x=0:(nrow(sums)-1), sums, pch=1, col=cols(hdp_settings(chain)$n),
+  # colour vector
+
+  if (class(sample) == "hdpSampleChain") {
+    mycols <- cols(ncol(sums))
+    legtext <- c("Early samples", "Late samples")
+  } else if (class(sample) == "hdpSampleMulti") {
+    postsamps <- sapply(chains(sample), function(x) length(numcluster(x)))
+    mycols <- rep(cols(length(postsamps)), postsamps)
+    legtext <- c("First chain", "Last chain")
+  }
+
+  matplot(x=0:(nrow(sums)-1), sums, pch=1, col=mycols,
           xlab="Component", ylab="Number of data items", ...)
 
   if (legend) {
-    legend("topright", col=c(col_early, col_late), pch=1,
-           legend=c("Early samples", "Late samples"), bty="n")
+    legend("topright", col=c(col_a, col_b), pch=1, legend=legtext, bty="n")
   }
 }
 
@@ -44,7 +58,7 @@ plot_comp_size <- function(chain, legend=TRUE, col_early="hotpink",
 
 #' Barplot of the mean distribution over data categories for each component
 #'
-#' @param chain A hdpSampleChain object including output from \code{\link{hdp_extract_components}}
+#' @param sample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
 #' @param comp (Optional) Number(s) of the component(s) to plot (from 0 to the max component number).
 #'  The default is to plot all components.
 #' @param cat_names (Optional) Data category names to label the horizontal axis
@@ -58,37 +72,47 @@ plot_comp_size <- function(chain, legend=TRUE, col_early="hotpink",
 #' @param cred_int Logical - should 95\% credibility intervals be plotted? (default TRUE)
 #' @param weights (Optional) Weights over the data categories to adjust their
 #'  relative contribution (multiplicative)
-#'  @seealso \code{\link{hdp_extract_components}}, \code{\link{plot_comp_size}},
-#'  \code{\link{plot_dp_comp_exposure}}
 #' @export
 #' @examples
-#' tcga_example_comp <- hdp_extract_components(tcga_example_chain)
-#' bases <- c('A', 'C', 'G', 'T')
+#' tcga_example_chain <- hdp_extract_components(tcga_example_chain)
+#'
+#' bases <- c("A", "C", "G", "T")
 #' trinuc_context <- paste0(rep(rep(bases, times=4), each=6),
-#'                          rep(c('C', 'T'), each=48),
+#'                          rep(c("C", "T"), each=48),
 #'                          rep(bases, times=24))
 #' group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
 #'                            each=16))
-#' plot_comp_distn_bar(tcga_example_comp, cat_names=trinuc_context,
+#' plot_comp_distn(tcga_example_chain, cat_names=trinuc_context,
 #'                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
-#'                col_nonsig="grey80", show_group_labels=TRUE)
+#'                 col_nonsig="grey80", show_group_labels=TRUE)
+#'
+#' # not run (slow):
+#' # tcga_example_multi <- hdp_extract_components(tcga_example_multi)
+#' # plot_comp_distn(tcga_example_multi, cat_names=trinuc_context,
+#' #                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
+#' #                 col_nonsig="grey80", show_group_labels=TRUE)
 
-plot_comp_distn_bar <- function(chain, comp=NULL, cat_names=NULL,
+plot_comp_distn <- function(sample, comp=NULL, cat_names=NULL,
                             grouping=NULL, col="grey70", col_nonsig=NULL,
                             show_group_labels=FALSE, cred_int=TRUE,
                             weights=NULL){
 
   # input checks
-  if (class(chain) != "hdpSampleChain") {
-    stop("chain must have class hdpSampleChain")
+  if (!class(sample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
+    stop("sample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(chain)) stop("chain not a valid hdpSampleChain object")
-  if (length(comp_categ_counts(chain)) == 0) {
-    stop("No component info for chain. First run hdp_extract_components")
+  if (!validObject(sample)) stop("sample not valid")
+  if (length(comp_categ_counts(sample)) == 0) {
+    stop("No component info for sample. First run hdp_extract_comp_single")
   }
-  ncat <- numcateg(final_hdpState(chain))
-  nsamp <- hdp_settings(chain)$n
-  comp_distn <- comp_categ_distn(chain)
+
+  if (class(sample) == "hdpSampleChain") {
+    ncat <- numcateg(final_hdpState(sample))
+  } else if (class(sample) == "hdpSampleMulti") {
+    ncat <- numcateg(final_hdpState(chains(sample)[[1]]))
+  }
+
+  comp_distn <- comp_categ_distn(sample)
   ncomp <- nrow(comp_distn$mean)-1
   if (class(comp) != "NULL") {
     if (class(comp) != "numeric" | any(comp %% 1 != 0) |
@@ -135,7 +159,7 @@ plot_comp_distn_bar <- function(chain, comp=NULL, cat_names=NULL,
     sig <- comp_distn$mean[as.character(ii),]
     ci <- comp_distn$cred.int[[as.character(ii)]]
 
-    # adjust categories by weights if specified (lose credibility intervals at the moment)
+    # adjust categories by weights if specified (lose cred intervals though)
     if(!is.null(weights)){
       sig <- sig %*% diag(weights)
       denom <- sum(sig)
@@ -155,19 +179,19 @@ plot_comp_distn_bar <- function(chain, comp=NULL, cat_names=NULL,
     plottop <- max(0.2, ceiling(max(ci)/0.1)*0.1)
 
     # main barplot
-    b <- barplot(sig, col=cat_cols_copy, xaxt='n', ylim=c(0,plottop*1.1),
-                 border=NA, names.arg=rep('',96), xpd=F,
+    b <- barplot(sig, col=cat_cols_copy, xaxt="n", ylim=c(0,plottop*1.1),
+                 border=NA, names.arg=rep("",96), xpd=F,
                  main=paste("Component", ii))
 
     # add credibility intervals
     if (cred_int & !is.null(ci)){
-      segments(x0=b, y0=ci[1,], y1=ci[2,], col='grey30')
+      segments(x0=b, y0=ci[1,], y1=ci[2,], col="grey30")
     }
 
     # add category names
     if (!is.null(cat_names)){
       mtext(cat_names, side=1, las=2, at=b, cex=0.7,
-            family='mono', col=cat_cols)
+            family="mono", col=cat_cols)
     }
 
     # add group labels
@@ -181,7 +205,7 @@ plot_comp_distn_bar <- function(chain, comp=NULL, cat_names=NULL,
       segments(x0=b[glstarts], x1=b[glends],
                y0=plottop, col=glcol, lwd=10)
 
-      text(b[floor((glends+glstarts)/2)], y=plottop*1.05,
+      text(b[floor(glends/2 + glstarts/2)], y=plottop*1.05,
            labels=gl$values)
     }
   }
@@ -189,10 +213,9 @@ plot_comp_distn_bar <- function(chain, comp=NULL, cat_names=NULL,
 
 
 
-
 #' Plot the mean distribution over components for each specified DP
 #'
-#' @param chain A hdpSampleChain object including output from \code{\link{hdp_extract_components}}
+#' @param sample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
 #' @param dpindices Indices of DP nodes to plot
 #' @param col Colours of each component, from 0 to the max number
 #' @param dpnames (Optional) Names of the DP nodes
@@ -201,30 +224,32 @@ plot_comp_distn_bar <- function(chain, comp=NULL, cat_names=NULL,
 #'  data items per DP be included? (Default TRUE)
 #' @param incl_nonsig Logical - should components whose credibility intervals include 0
 #'  be included (per DP)? (Default TRUE)
-#'  @seealso \code{\link{hdp_extract_components}}, \code{\link{plot_comp_size}},
-#'  \code{\link{plot_comp_distn_bar}}
 #' @export
 #' @examples
-#' tcga_example_comp <- hdp_extract_components(tcga_example_chain)
-#' plot_dp_comp_exposure(tcga_example_comp, 4:30,
+#' tcga_example_chain <- hdp_extract_components(tcga_example_chain)
+#' plot_dp_comp_exposure(tcga_example_chain, 4:30,
 #'                       RColorBrewer::brewer.pal(9, "Set3"))
-#' plot_dp_comp_exposure(tcga_example_comp, 4:30,
+#' plot_dp_comp_exposure(tcga_example_chain, 4:30,
 #'                       RColorBrewer::brewer.pal(9, "Set3"),
 #'                       incl_numdata_plot=FALSE, incl_nonsig=FALSE)
+#' # not run (slow):
+#' # tcga_example_multi <- hdp_extract_components(tcga_example_multi)
+#' # plot_dp_comp_exposure(tcga_example_multi, 4:30,
+#' #                       RColorBrewer::brewer.pal(9, "Set3"))
 
-plot_dp_comp_exposure <- function(chain, dpindices, col, dpnames=NULL,
+plot_dp_comp_exposure <- function(sample, dpindices, col, dpnames=NULL,
                                 main_text=NULL, incl_numdata_plot=TRUE,
                                 incl_nonsig=TRUE){
 
   # input checks
-  if (class(chain) != "hdpSampleChain") {
-    stop("chain must have class hdpSampleChain")
+  if (!class(sample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
+    stop("sample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(chain)) stop("chain not a valid hdpSampleChain object")
-  if (length(comp_categ_counts(chain)) == 0) {
-    stop("No component info for chain. First run hdp_extract_components")
+  if (!validObject(sample)) stop("sample not valid")
+  if (length(comp_categ_counts(sample)) == 0) {
+    stop("No component info for sample. First run hdp_extract_comp_single")
   }
-  dp_distn <- comp_dp_distn(chain)
+  dp_distn <- comp_dp_distn(sample)
   ndp <- nrow(dp_distn$mean)
   ncomp <- ncol(dp_distn$mean)
   if (!is.numeric(dpindices) | any(dpindices %% 1 != 0) |
@@ -254,21 +279,25 @@ plot_dp_comp_exposure <- function(chain, dpindices, col, dpnames=NULL,
   on.exit(par(par_old), add=TRUE)
 
   # Number of data items per DP
-  dps <- dp(final_hdpState(chain))[dpindices]
+  if (class(sample) == "hdpSampleChain") {
+    dps <- dp(final_hdpState(sample))[dpindices]
+  } else if (class(sample) == "hdpSampleMulti") {
+    dps <- dp(final_hdpState(chains(sample)[[1]]))[dpindices]
+  }
+
   numdata <- sapply(dps, function(x) x@numdata)
   dp_order <- order(numdata, decreasing=TRUE)
 
   # mean exposures
   exposures <- t(dp_distn$mean[dpindices,])
 
-  # adjust by only considering significantly non-zero exposures
+  # only include significantly non-zero exposures
   if (!incl_nonsig){
     cis <- dp_distn$cred.int[dpindices]
     nonsig <- lapply(cis, function(x) which(x[1,]==0))
     for (i in 1:length(nonsig)){
       exposures[nonsig[[i]],i] <- 0
     }
-    #exposures <- exposures %*% diag(1/colSums(exposures))
   }
 
   # which components to include in this plot
@@ -279,26 +308,29 @@ plot_dp_comp_exposure <- function(chain, dpindices, col, dpnames=NULL,
   if (incl_numdata_plot){
     par(mfrow=c(2, 1), mar=c(1, 4, 2, 0.5), oma=c(1.5, 1.5, 1, 1), cex.axis=0.7)
 
-    barplot(numdata[dp_order], main=main_text, col='gray', space=0, border=NA,
-            names.arg=dpnames, ylab='Number of data items', las=2, cex.names=0.6,
+    barplot(numdata[dp_order], main=main_text, col="gray", space=0, border=NA,
+            names.arg=dpnames, ylab="Number of data items", las=2,
+            cex.names=0.6,
             legend.text=names(inc), args.legend=list(fill=col[inc],
-                                                          bty='n',
-                                                          title='Component',
+                                                          bty="n",
+                                                          title="Component",
                                                           ncol=num_leg_col))
 
     barplot(exposures[inc, dp_order], space=0, col=col[inc], border=NA,
-            names.arg=dpnames, ylab='Component exposure', las=2, cex.names=0.6)
+            ylim=c(0, 1), names.arg=dpnames, ylab="Component exposure", las=2,
+            cex.names=0.6)
   } else {
 
     par(cex.axis=0.7)
     # don't understand why legend.text needs rev() here and not in above case,
     # but seems to work?
-    barplot(exposures[inc, dp_order], space=0, col=col[inc], border=NA, ylim=c(0,1),
+    barplot(exposures[inc, dp_order], space=0, col=col[inc],
+            border=NA, ylim=c(0, 1),
             xlim=c(0,length(dpindices)*1.3), names.arg=dpnames,
-            ylab='Component exposure', las=2, cex.names=0.6,
+            ylab="Component exposure", las=2, cex.names=0.6,
             legend.text=rev(names(inc)), args.legend=list(fill=col[inc],
-                                                          bty='n',
-                                                          title='Component',
+                                                          bty="n",
+                                                          title="Component",
                                                           ncol=num_leg_col))
   }
 

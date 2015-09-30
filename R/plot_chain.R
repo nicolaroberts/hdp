@@ -11,6 +11,9 @@
 #' @export
 #' @examples
 #' plot_lik(tcga_example_chain, bty="L")
+#'
+#' par(mfrow=c(3,2))
+#' lapply(chains(tcga_example_multi), plot_lik, bty="L")
 
 plot_lik <- function(chain, start=1, end=length(lik(chain)),
                      col_lik="blue", col_burn="red", ...){
@@ -44,6 +47,9 @@ plot_lik <- function(chain, start=1, end=length(lik(chain)),
 #' @export
 #' @examples
 #' plot_numcluster(tcga_example_chain, bty="L")
+#'
+#' par(mfrow=c(3,2))
+#' lapply(chains(tcga_example_multi), plot_numcluster, bty="L")
 
 plot_numcluster <- function(chain, col="blue", ...){
 
@@ -80,6 +86,9 @@ plot_numcluster <- function(chain, col="blue", ...){
 #' @export
 #' @examples
 #' plot_data_assigned(tcga_example_chain, bty="L")
+#'
+#' par(mfrow=c(3,2))
+#' lapply(chains(tcga_example_multi), plot_data_assigned, bty="L")
 
 plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
                                col_late="skyblue3", ...){
@@ -118,7 +127,7 @@ plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
 
   matplot(pda[1:xmax,], type="l", col=cols(n), xlim=c(0.95, xmax),
           xlab="Number of raw clusters",
-          ylab="Cumulative proportion of data items assigned", ...)
+          ylab="Cumulative prop. of data assigned", ...)
 
   if (legend) {
     legend("bottomright", col=c(col_early, col_late, "black"), lty=1, lwd=2,
