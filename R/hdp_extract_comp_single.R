@@ -1,18 +1,6 @@
-#' Extract major components from the raw clusters of a hdpSampleChain
-#'
-#' @param chain A hdpSampleChain object
-#' @param prop.ex The proportion of data items explained by the components (default 0.97)
-#' @param cos.merge Merge components with cosine similarity above this threshold (default 0.90)
-#' @return A hdpSampleChain object updated with component information
-#' @seealso \code{\link{hdp_posterior}}, \code{\link{plot_comp_size}},
-#'  \code{\link{plot_comp_distn_bar}}, \code{\link{plot_dp_comp_exposure}}
-#' @export
-#' @examples
-#' hdp_extract_components(tcga_example_chain)
+hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
 
-hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
-
-  set.seed(hdp_seed(chain))
+  set.seed(hdp_seed(chain), kind="Mersenne-Twister", normal.kind="Inversion")
 
   # input checks
   if (class(chain) != "hdpSampleChain") {
@@ -41,7 +29,7 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
                   )
 
     for (label in colnames(ans)){
-      ans[,label] <- rowSums(matrix(mx[,which(colnames(mx) == label)],
+      ans[, label] <- rowSums(matrix(mx[, which(colnames(mx) == label)],
                                     nrow=num_rows))
     }
     return(ans)
@@ -58,17 +46,17 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
 
   ccc_1 <- lapply(clust_categ_counts(chain), function(x){
     ans <- cbind(x, matrix(0, nrow=ncat, ncol=(maxclust-ncol(x)+1)))
-    return(ans[,-ncol(ans)])
+    return(ans[, -ncol(ans)])
   })
 
   cdc_1 <- lapply(clust_dp_counts(chain), function(x){
     ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
-    return(ans[,-ncol(ans)])
+    return(ans[, -ncol(ans)])
   })
 
   cdw_1 <- lapply(clust_dp_weights(chain), function(x){
     ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
-    return(ans[,-ncol(ans)])
+    return(ans[, -ncol(ans)])
   })
 
 
@@ -87,16 +75,22 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
                                              groupFun="differentClusters"))
   ccc_label <- split(flexclust::clusters(ccc_clust), groupfactor)
 
-  ccc_2 <- mapply(function(ccc, label) {colnames(ccc) <- label
-                                        ccc[,order(as.numeric(colnames(ccc)))]},
+  ccc_2 <- mapply(function(ccc, label) {
+    colnames(ccc) <- label
+    ccc[, order(as.numeric(colnames(ccc)))]
+    },
                   ccc_1, ccc_label, SIMPLIFY=FALSE)
 
-  cdc_2 <- mapply(function(cdc, label) {colnames(cdc) <- label
-                                        cdc[,order(as.numeric(colnames(cdc)))]},
+  cdc_2 <- mapply(function(cdc, label) {
+    colnames(cdc) <- label
+    cdc[, order(as.numeric(colnames(cdc)))]
+    },
                   cdc_1, ccc_label, SIMPLIFY=FALSE)
 
-  cdw_2 <- mapply(function(cdw, label) {colnames(cdw) <- label
-                                        cdw[,order(as.numeric(colnames(cdw)))]},
+  cdw_2 <- mapply(function(cdw, label) {
+                    colnames(cdw) <- label
+                    cdw[, order(as.numeric(colnames(cdw)))]
+                    },
                   cdw_1, ccc_label, SIMPLIFY=FALSE)
 
   remove(ccc_1, cdc_1, cdw_1, ccc_unlist, groupfactor, ccc_clust, ccc_label)
@@ -105,8 +99,8 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
   # Merge the ccc columns with high cosine similarity.
   avgdistn <- matrix(0, nrow=ncat, ncol=maxclust)
   for (i in 1:maxclust){
-    distns <- sapply(ccc_2, function(x) x[,i]/sum(x[,i]))
-    avgdistn[,i] <- rowMeans(distns, na.rm=T)
+    distns <- sapply(ccc_2, function(x) x[, i]/sum(x[, i]))
+    avgdistn[, i] <- rowMeans(distns, na.rm=T)
   }
   clust_cos <- lsa::cosine(avgdistn)
   clust_same <- (clust_cos > cos.merge & lower.tri(clust_cos))
@@ -114,7 +108,7 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
   # update clust_label vector to reflect the merging of columns.
   if (length(same)>0){
     for (i in 1:nrow(same)){
-      clust_label[same[i,1]] <- clust_label[same[i,2]]
+      clust_label[same[i, 1]] <- clust_label[same[i, 2]]
     }
   }
   ccc_3 <- lapply(ccc_2, merge_cols, clust_label)
@@ -129,7 +123,11 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
   avg_prop_data <- rowMeans(sapply(ccc_3, colSums))/sum(ccc_3[[1]])
   cl_ordered <- names(avg_prop_data)[order(avg_prop_data, decreasing=T)]
   cl_below_prop <- which(cumsum(avg_prop_data[cl_ordered]) < prop.ex)
-  use_clust <- cl_ordered[1:(max(cl_below_prop)+1)]
+  if (length(cl_below_prop) == 0 ) {
+    use_clust <- cl_ordered
+  } else {
+    use_clust <- cl_ordered[1:(max(cl_below_prop)+1)]
+  }
   # update clust_label vector to reflect the merging of the small
   # clusters into the 0-th component
   clust_label[which(!clust_label %in% use_clust)] <- 0
@@ -148,19 +146,19 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
   colorder <- c(1, setdiff(order(avg_ndi, decreasing=T), 1))
 
   ccc_5 <- lapply(ccc_4, function(x) {
-    x <- x[,colorder]
+    x <- x[, colorder]
     colnames(x) <- 0:(ncol(x)-1)
     return(x)
   })
 
   cdc_5 <- lapply(cdc_4, function(x) {
-    x <- x[,colorder]
+    x <- x[, colorder]
     colnames(x) <- 0:(ncol(x)-1)
     return(x)
   })
 
   cdw_5 <- lapply(cdw_4, function(x) {
-    x <- x[,colorder]
+    x <- x[, colorder]
     colnames(x) <- 0:(ncol(x)-1)
     return(x)
   })
@@ -175,15 +173,15 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
   # Convert ccc into list of length ncomp, with matrices nsamp*ncat
   ccc_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncat)), ncomp)
   for (i in 1:ncomp){
-    ccc_ans[[i]] <- t(sapply(ccc_5, function(x) x[,i]))
+    ccc_ans[[i]] <- t(sapply(ccc_5, function(x) x[, i]))
   }
 
   # Convert cdc and cdw into list of length ndp, with matrices nsamp*ncomp
   cdc_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncomp)), ndp)
   cdw_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncomp)), ndp)
   for (i in 1:ndp){
-    cdc_ans[[i]] <- t(sapply(cdc_5, function(x) x[i,]))
-    cdw_ans[[i]] <- t(sapply(cdw_5, function(x) x[i,]))
+    cdc_ans[[i]] <- t(sapply(cdc_5, function(x) x[i, ]))
+    cdw_ans[[i]] <- t(sapply(cdw_5, function(x) x[i, ]))
   }
 
   remove(ccc_5, cdc_5, cdw_5)
@@ -192,26 +190,34 @@ hdp_extract_components <- function(chain, prop.ex=0.97, cos.merge=0.90){
   # Step (7)
   # Calculate mean and 95% credibility interval for each component's
   # categorical data distribution
-  ccc_norm <- lapply(ccc_ans, function(x) x/rowSums(x))
+  ccc_norm <- lapply(ccc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
-  ccc_mean <- t(sapply(ccc_norm, colMeans))
+  ccc_mean <- t(sapply(ccc_norm, colMeans, na.rm=TRUE))
   rownames(ccc_mean) <- 0:(ncomp-1)
 
-  ccc_credint <- lapply(ccc_norm, function(x) {
-    round(apply(x, 2, function(y) coda::HPDinterval(coda::as.mcmc(y))), 3)
-    })
+  ccc_credint <- lapply(ccc_norm, function(x) {apply(x, 2, function(y) {
+    samp <- coda::as.mcmc(y)
+    if (sum(!is.nan(samp)) ==  1) {
+        c(NaN, NaN)
+    } else {
+        round(coda::HPDinterval(samp), 3)
+    }})})
   names(ccc_credint) <- 0:(ncomp-1)
 
   # Step (8)
   # Calculate mean and 95% credibility interval for each DP's
   # distribution over components (counts and weights?)
-  cdc_norm <- lapply(cdc_ans, function(x) x/rowSums(x))
+  cdc_norm <- lapply(cdc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
-  cdc_mean <- t(sapply(cdc_norm, colMeans))
+  cdc_mean <- t(sapply(cdc_norm, colMeans, na.rm=TRUE))
 
-  cdc_credint <- lapply(cdc_norm, function(x) {
-    round(apply(x, 2, function(y) coda::HPDinterval(coda::as.mcmc(y))), 3)
-  })
+  cdc_credint <- lapply(cdc_norm, function(x) {apply(x, 2, function(y) {
+    samp <- coda::as.mcmc(y)
+    if (sum(!is.nan(samp)) ==  1) {
+      c(NaN, NaN)
+    } else {
+      round(coda::HPDinterval(samp), 3)
+    }})})
 
   # add extracted components into chain hdpSampleChain slots
   chain@comp_settings <- list(prop.ex=prop.ex,
