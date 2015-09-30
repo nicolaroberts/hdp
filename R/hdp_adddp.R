@@ -1,19 +1,19 @@
-#' Add DPs to a hdpState object 
-#' 
+#' Add DPs to a hdpState object
+#'
 #' Add DP nodes to a hdpState object and specify each parent relationship
-#' and concentration parameter. Concentration parameters can be added to a 
+#' and concentration parameter. Concentration parameters can be added to a
 #' hdpState object with \code{\link{hdp_addconparam}}. Data is assigned via \code{\link{hdp_setdata}}.
-#' When initialised, the DP nodes are 'heldout' (not available for posterior sampling) 
+#' When initialised, the DP nodes are 'heldout' (not available for posterior sampling)
 #' and will need to be activated (see \code{\link{dp_activate}}). Finally, the posterior
-#' sampling process (a Gibbs sampler) is run via \code{\link{hdp_posterior}}. 
-#' 
-#' 
-#' @param hdp A hdpState object 
-#' @param numdp The number of DPs to add 
+#' sampling process (a Gibbs sampler) is run via \code{\link{hdp_posterior}}.
+#'
+#'
+#' @param hdp A hdpState object
+#' @param numdp The number of DPs to add
 #' @param ppindex Index (or indices) of the parental process(es) for the new DPs.
 #' @param cpindex Index (or indices) of the concentration parameters for the new DPs.
 #' @return A hdpState object with the updated HDP structure. See \code{\link{hdpState-class}}
-#' @seealso \code{\link{hdp_init}}, \code{\link{hdp_setdata}}, 
+#' @seealso \code{\link{hdp_init}}, \code{\link{hdp_setdata}},
 #'  \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 #' @export
 #' @examples
@@ -21,14 +21,14 @@
 #' # add two more DPs with parent '1' and concentration parameter '2'
 #' my_hdp <- hdp_adddp(my_hdp, 2, 1, 2)
 #' my_hdp
-#' 
+#
 #' hdp_example <- hdp_init(c(0, 1, 1), c(1, 2, 2), rep(1, 6), rep(2, 2), rep(0.5, 2))
-#' # add six more DPs, three with parent '2', three with parent '3', 
+#' # add six more DPs, three with parent '2', three with parent '3',
 #' # and all with concentration parameter '2'
 #' hdp_example <- hdp_adddp(hdp_example, 6, c(2, 2, 2, 3, 3, 3), 2)
 #' hdp_example
 hdp_adddp <- function(hdp, numdp, ppindex, cpindex){
-  
+
   # input checks
   if (class(hdp) != "hdpState") stop("hdp must have class hdpState")
   if (!validObject(hdp)) stop("input hdp is not a valid hdpState object")
@@ -46,17 +46,17 @@ hdp_adddp <- function(hdp, numdp, ppindex, cpindex){
     stop("ppindex must be non-negative integer/s,
          referring to a parent of smaller index")
   }
-  if (any(cpindex < 1) | 
-        any(cpindex %% 1 != 0) | 
+  if (any(cpindex < 1) |
+        any(cpindex %% 1 != 0) |
         any(cpindex > hdp@numconparam) |
         length(cpindex) != length(ppindex)) {
-    stop("cpindex must be positive integer/s, no greater than the number of 
+    stop("cpindex must be positive integer/s, no greater than the number of
          concentration parameters, and same length as ppindex")
-  } 
-  
-  
+  }
+
+
   HELDOUT <- 0L
-  
+
   # add new DPs
   dpindex   <- hdp@numdp + 1:numdp
   hdp@numdp <- hdp@numdp + as.integer(numdp)
@@ -82,7 +82,7 @@ hdp_adddp <- function(hdp, numdp, ppindex, cpindex){
                         numdata = 0L,
                         datass  = vector("integer"))
   }
-  
+
   # check validity and return
   if (!validObject(hdp)) warning("Not a valid hdpState object.")
   return(hdp)
