@@ -114,6 +114,8 @@ setClass("hdpDP",
 #' @slot ppindex parent node index for each DP
 #' @slot cpindex concentration parameter index for each DP
 #' @slot ttindex DP index of those sharing a concentration parameter
+#' @slot initcc Number of initial clusters
+#' @slot seed_activate Random seed used to initiate cluster membership
 #' @export
 setClass("hdpState",
          slots = list(
@@ -125,7 +127,9 @@ setClass("hdpState",
            dpstate = "integer",
            ppindex = "integer",
            cpindex = "integer",
-           ttindex = "integer"),
+           ttindex = "integer",
+           initcc = "integer",
+           seed_activate = "integer"),
          validity = function(object){
            is_valid <- TRUE
            if (is.any.slot.negative(object)) {
@@ -193,7 +197,7 @@ setClass("hdpState",
 #'  with the weights of each cluster per DP. Number of rows is the number of
 #'  DPs (constant), and number of columns is the number of clusters in that
 #'  posterior sample (variable).
-#' @slot comp_settings Settings of \code{\link{hdp_extract_components}} used to
+#' @slot comp_settings Settings used to
 #'  consolidate raw clusters (variable number across posterior samples) into
 #'  global components (constant number across posterior samples):
 #'    prop.ex (minimum proportion of data explained), cos.merge (merge components within cosine similarity)
@@ -204,11 +208,10 @@ setClass("hdpState",
 #' @slot comp_dp_counts List of matrices (one for each DP)
 #'  counting sample-component assignment (aggregating across data categories).
 #'  Number of rows is the number of posterior samples, and number of
-#'  columns is the number of components output from \code{\link{hdp_extract_components}}.
+#'  columns is the number of components.
 #' @slot comp_dp_weights List of matrices (one for each DP)
 #'  with the weights of each component per sample. Number of rows is the number of
-#'  posterior samples, and number of columns is the number of components
-#'  output from \code{\link{hdp_extract_components}}.
+#'  posterior samples, and number of columns is the number of components.
 #' @slot comp_categ_distn List with elements "mean" and "cred.int", containing
 #'  matrices with the mean (and lower/upper 95% credibility interval) distribution
 #'  over data categories for each component. Number of rows is the number of
@@ -274,7 +277,57 @@ setClass("hdpSampleChain",
              is_valid <- FALSE
              message("settings must be positive integers")
            }
-           # add validity checks for comp* slots
+           # add validity checks for comp* slots and seeds list
            return(is_valid)
          })
 
+
+
+#' hdpSampleMulti class for multiple independent hdpSampleChain objects for the same HDP
+#'
+#' @export
+#'
+#' @slot chains List of hdpSampleChain objects storing multiple independent runs of the posterior sampling chain for the same data and HDP struct
+#' @slot comp_settings Settings used to
+#'  consolidate raw clusters (variable number across posterior samples) into
+#'  global components (constant number across posterior samples):
+#'    cos.merge (merge components within cosine similarity)
+#' @slot comp_categ_counts List of matrices (one for each component)
+#'  counting the sample-category data assignment across all DP nodes.
+#'  Number of rows is the number of posterior samples, and number of
+#'  columns is the number of data categories.
+#' @slot comp_dp_counts List of matrices (one for each DP)
+#'  counting sample-component assignment (aggregating across data categories).
+#'  Number of rows is the number of posterior samples, and number of
+#'  columns is the number of components.
+#' @slot comp_dp_weights List of matrices (one for each DP)
+#'  with the weights of each component per sample. Number of rows is the number of
+#'  posterior samples, and number of columns is the number of components.
+#' @slot comp_categ_distn List with elements "mean" and "cred.int", containing
+#'  matrices with the mean (and lower/upper 95% credibility interval) distribution
+#'  over data categories for each component. Number of rows is the number of
+#'  components, and number of columns is the number of data categories. Rows sum to 1.
+#' @slot comp_dp_distn List with elements "mean" and "cred.int", containing
+#'  matrices with the mean (and lower/upper 95% credibility interval) distribution
+#'  over components for each DP. Number of rows is the number of
+#'  DPs, and number of columns is the number of components. Rows sum to 1.
+#' @slot prop.ex (Average) proportion of dataset explained by the components consistently
+#'  found in all chains.
+#'
+setClass("hdpSampleMulti",
+         slots = list(
+           chains = "list",
+           comp_settings = "list",
+           comp_categ_counts = "list",
+           comp_dp_counts = "list",
+           comp_dp_weights="list",
+           comp_categ_distn="list",
+           comp_dp_distn="list",
+           prop.ex="numeric"),
+         validity = function(object){
+           is_valid <- TRUE
+           # add validity checks
+           # check all hdpSampleChain objects have same data, struct
+           # and different seed.
+           return(is_valid)
+         })

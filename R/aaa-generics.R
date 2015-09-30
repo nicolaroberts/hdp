@@ -164,7 +164,9 @@ setMethod("as.list",
                         dpstate=x@dpstate,
                         ppindex=x@ppindex,
                         cpindex=x@cpindex,
-                        ttindex=x@ttindex)
+                        ttindex=x@ttindex,
+                        initcc=x@initcc,
+                        seed_activate=x@seed_activate)
             return(ans)
           })
 
@@ -182,7 +184,9 @@ setMethod("as.hdpState",
                        dpstate=x$dpstate,
                        ppindex=x$ppindex,
                        cpindex=x$cpindex,
-                       ttindex=x$ttindex)
+                       ttindex=x$ttindex,
+                       initcc=x$initcc,
+                       seed_activate=x$seed_activate)
             return(ans)
           })
 
@@ -211,6 +215,10 @@ setMethod("show",
                            c("Shape", "Rate", "Value"))))
             cat(" Number of data categories:", length(object@base@hh), "\n")
             cat(" Number of clusters:", object@base@numclass, "\n")
+            if (length(object@initcc)==1) {
+              cat(" Initialised with", object@initcc,
+                  "clusters, using random seed", object@seed_activate, "\n")
+            }
           })
 
 
@@ -372,7 +380,54 @@ setMethod("show",
           })
 
 
-# getter methods for hdpSampleChain objects ---------
+# Generics for hdpSampleMulti class -------------
+
+#' @describeIn hdpSampleMulti Convert to list class
+#' @export
+#' @param x Object of class hdpSampleMulti
+#' @param ... unused
+setMethod("as.list",
+          signature = "hdpSampleMulti",
+          definition = function(x, ...) {
+            ans <- list(chains=x@chains,
+                        comp_settings=x@comp_settings,
+                        comp_categ_counts=x@comp_categ_counts,
+                        comp_dp_counts=x@comp_dp_counts,
+                        comp_dp_weights=x@comp_dp_weights,
+                        comp_categ_distn=x@comp_categ_distn,
+                        comp_dp_distn=x@comp_dp_distn)
+            return(ans)
+          })
+
+
+# show method
+setMethod("show",
+          "hdpSampleMulti",
+          function(object) {
+
+            totalsamp <- sum(sapply(object@chains, function(x) x@settings$n))
+
+            cat("Object of class", class(object), "\n")
+            cat(" Number of chains:", length(object@chains), "\n")
+            cat(" Total posterior samples:", totalsamp, "\n")
+            ncomp <- length(object@comp_categ_counts)
+            if (ncomp == 0) {
+              cat(" Components: NO. Run hdp_extract_components \n")
+            } else {
+              cat(" Components: YES. Prop of data explained =",
+                  object@prop.ex,
+                  " Merge if cosine sim >",
+                  object@comp_settings$cos.merge, "\n")
+              cat(" Component number:", ncomp-1, "\n")
+            }
+            cat(" ----------\n")
+            cat(" Final hdpState from first chain: \n")
+            print(object@chains[[1]]@hdp)
+          })
+
+
+
+# getter methods for hdpSampleChain and hdpSampleMulti objects ---------
 
 setGeneric("hdp_seed", function(x, ...) standardGeneric("hdp_seed"))
 #' @describeIn hdpSampleChain Get random seed of posterior sampling chain
@@ -476,75 +531,178 @@ setMethod("clust_dp_weights",
             return(ans)
           })
 
-setGeneric("hdp_comp_settings",
-           function(x, ...) standardGeneric("hdp_comp_settings"))
-#' @describeIn hdpSampleChain Get settings of component extraction from HDP posterior sampling chain
+
+#' Get settings of component extraction from hdpSampleChain or hdpSampleMulti
+#' @param x hdpSampleChain or hdpSampleMulti
+#' @return list of settings from hdp_extract_components
 #' @aliases hdp_comp_settings
 #' @export
+setGeneric("hdp_comp_settings",
+           function(x) standardGeneric("hdp_comp_settings"))
+
+#' @describeIn hdp_comp_settings
 setMethod("hdp_comp_settings",
           signature = "hdpSampleChain",
-          definition = function(x, ...) {
+          definition = function(x) {
             ans <- x@comp_settings
             return(ans)
           })
 
+#' @describeIn hdp_comp_settings
+setMethod("hdp_comp_settings",
+          signature = "hdpSampleMulti",
+          definition = function(x) {
+            ans <- x@comp_settings
+            return(ans)
+          })
 
-setGeneric("comp_categ_counts",
-           function(x, ...) standardGeneric("comp_categ_counts"))
-#' @describeIn hdpSampleChain Get sample vs category counts for each component
+#' Get sample vs category counts for each component
+#' @param x hdpSampleChain or hdpSampleMulti
+#' @return List of matrices (one for each component)
+#'  counting the sample-category data assignment across all DP nodes.
+#'  Number of rows is the number of posterior samples, and number of
+#'  columns is the number of data categories.
 #' @aliases comp_categ_counts
 #' @export
+setGeneric("comp_categ_counts",
+           function(x) standardGeneric("comp_categ_counts"))
+
+#' @describeIn comp_categ_counts
 setMethod("comp_categ_counts",
           signature = "hdpSampleChain",
-          definition = function(x, ...) {
+          definition = function(x) {
             ans <- x@comp_categ_counts
             return(ans)
           })
 
-setGeneric("comp_dp_counts",
-           function(x, ...) standardGeneric("comp_dp_counts"))
-#' @describeIn hdpSampleChain Get sample vs component counts for each DP
+#' @describeIn comp_categ_counts
+setMethod("comp_categ_counts",
+          signature = "hdpSampleMulti",
+          definition = function(x) {
+            ans <- x@comp_categ_counts
+            return(ans)
+          })
+
+
+#' Get sample vs component counts for each DP
+#' @param x hdpSampleChain or hdpSampleMulti
+#' @return List of matrices (one for each DP)
+#'  counting sample-component assignment (aggregating across data categories).
+#'  Number of rows is the number of posterior samples, and number of
+#'  columns is the number of components.
 #' @aliases comp_dp_counts
 #' @export
+setGeneric("comp_dp_counts",
+           function(x) standardGeneric("comp_dp_counts"))
+
+#' @describeIn comp_dp_counts
 setMethod("comp_dp_counts",
           signature = "hdpSampleChain",
-          definition = function(x, ...) {
+          definition = function(x) {
             ans <- x@comp_dp_counts
             return(ans)
           })
 
-setGeneric("comp_dp_weights",
-           function(x, ...) standardGeneric("comp_dp_weights"))
-#' @describeIn hdpSampleChain Get sample vs component weights for each DP
+#' @describeIn comp_dp_counts
+setMethod("comp_dp_counts",
+          signature = "hdpSampleMulti",
+          definition = function(x) {
+            ans <- x@comp_dp_counts
+            return(ans)
+          })
+
+
+#' Get sample vs component weights for each DP
+#' @param x hdpSampleChain or hdpSampleMulti
+#' @return List of matrices (one for each DP)
+#'  with the weights of each component per sample. Number of rows is the number of
+#'  posterior samples, and number of columns is the number of components.
 #' @aliases comp_dp_weights
 #' @export
+setGeneric("comp_dp_weights",
+           function(x) standardGeneric("comp_dp_weights"))
+
+#' @describeIn comp_dp_weights
 setMethod("comp_dp_weights",
           signature = "hdpSampleChain",
-          definition = function(x, ...) {
+          definition = function(x) {
             ans <- x@comp_dp_weights
             return(ans)
           })
 
-setGeneric("comp_categ_distn",
-           function(x, ...) standardGeneric("comp_categ_distn"))
-#' @describeIn hdpSampleChain Get mean distribution over data categories for each component
+#' @describeIn comp_dp_weights
+setMethod("comp_dp_weights",
+          signature = "hdpSampleMulti",
+          definition = function(x) {
+            ans <- x@comp_dp_weights
+            return(ans)
+          })
+
+
+#' Get mean distribution over data categories for each component
+#' @param x hdpSampleChain or hdpSampleMulti
+#' @return List with elements "mean" and "cred.int", containing
+#'  matrices with the mean (and lower/upper 95% credibility interval) distribution
+#'  over data categories for each component. Number of rows is the number of
+#'  components, and number of columns is the number of data categories. Rows sum to 1.
 #' @aliases comp_categ_distn
 #' @export
+setGeneric("comp_categ_distn",
+           function(x) standardGeneric("comp_categ_distn"))
+
+#' @describeIn comp_categ_distn
 setMethod("comp_categ_distn",
           signature = "hdpSampleChain",
-          definition = function(x, ...) {
+          definition = function(x) {
             ans <- x@comp_categ_distn
             return(ans)
           })
 
-setGeneric("comp_dp_distn",
-           function(x, ...) standardGeneric("comp_dp_distn"))
-#' @describeIn hdpSampleChain Get mean distribution over components for each DP
+#' @describeIn comp_categ_distn
+setMethod("comp_categ_distn",
+          signature = "hdpSampleMulti",
+          definition = function(x) {
+            ans <- x@comp_categ_distn
+            return(ans)
+          })
+
+
+#' Get mean distribution over components for each DP
+#' @param x hdpSampleChain or hdpSampleMulti
+#' @return List with elements "mean" and "cred.int", containing
+#'  matrices with the mean (and lower/upper 95% credibility interval) distribution
+#'  over components for each DP. Number of rows is the number of
+#'  DPs, and number of columns is the number of components. Rows sum to 1.
 #' @aliases comp_dp_distn
 #' @export
+setGeneric("comp_dp_distn",
+           function(x) standardGeneric("comp_dp_distn"))
+
+#' @describeIn comp_dp_distn
 setMethod("comp_dp_distn",
           signature = "hdpSampleChain",
-          definition = function(x, ...) {
+          definition = function(x) {
             ans <- x@comp_dp_distn
+            return(ans)
+          })
+
+#' @describeIn comp_dp_distn
+setMethod("comp_dp_distn",
+          signature = "hdpSampleMulti",
+          definition = function(x) {
+            ans <- x@comp_dp_distn
+            return(ans)
+          })
+
+
+setGeneric("chains",
+           function(x, ...) standardGeneric("chains"))
+#' @describeIn hdpSampleMulti Get list of hdpSampleChain objects
+#' @aliases chains
+#' @export
+setMethod("chains",
+          signature = "hdpSampleMulti",
+          definition = function(x, ...) {
+            ans <- x@chains
             return(ans)
           })
