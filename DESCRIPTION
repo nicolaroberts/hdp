@@ -1,12 +1,17 @@
 Package: hdp
 Title: Hierarchical Dirichlet Process for categorical count data
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: c(person("Nicola", "Roberts",
   email="nr3@sanger.ac.uk", role=c("aut", "cre")),
   person("Yee Whye", "Teh", role=c("aut", "cph"),
   comment="MATLAB and C original, http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz"))
-Depends: R(>= 3.1)
-Imports: lsa, methods, flexclust, coda
+Depends:
+    R(>= 3.1)
+Imports:
+    lsa,
+    methods,
+    flexclust,
+    coda
 LazyData: true
 Description: Model categorical count data with a hierarchical tree of Dirichlet
     Processes. Includes functions to initialise a HDP with a custom tree
@@ -20,5 +25,37 @@ Description: Model categorical count data with a hierarchical tree of Dirichlet
 License: file LICENSE
 URL: https://github.com/nicolaroberts/hdp
 BugReports: https://github.com/nicolaroberts/hdp/issues
-Suggests: testthat, SomaticCancerAlterations, BSgenome.Hsapiens.UCSC.hg19,
-  GenomicRanges, Biostrings, RColorBrewer
+Suggests:
+    testthat,
+    SomaticCancerAlterations,
+    BSgenome.Hsapiens.UCSC.hg19,
+    GenomicRanges,
+    Biostrings,
+    RColorBrewer
+Collate:
+    'aaa-classes.R'
+    'hdp_extract_comp_single.R'
+    'hdp_extract_comp_multi.R'
+    'aaa-generics-components.R'
+    'aaa-generics.R'
+    'cull_posterior_samples.R'
+    'dp_activate.R'
+    'dp_freeze.R'
+    'hdp.R'
+    'hdp_addconparam.R'
+    'hdp_adddp.R'
+    'hdp_getstate.R'
+    'hdp_init.R'
+    'hdp_multi_chain.R'
+    'hdp_posterior.R'
+    'hdp_quick_init.R'
+    'hdp_setdata.R'
+    'iterate.R'
+    'plot_chain.R'
+    'plot_components.R'
+    'qq_addclass.R'
+    'randnumtable.R'
+    'randstick.R'
+    'stirling.R'
+    'utilities.R'
+    'zzz.R'
