@@ -281,12 +281,28 @@ plot_dp_comp_exposure <- function(sample, dpindices, col, dpnames=NULL,
   # Number of data items per DP
   if (class(sample) == "hdpSampleChain") {
     dps <- dp(final_hdpState(sample))[dpindices]
+    pps <- ppindex(final_hdpState(sample))[dpindices]
   } else if (class(sample) == "hdpSampleMulti") {
     dps <- dp(final_hdpState(chains(sample)[[1]]))[dpindices]
+    pps <- ppindex(final_hdpState(chains(sample)[[1]]))[dpindices]
   }
 
   numdata <- sapply(dps, function(x) x@numdata)
   dp_order <- order(numdata, decreasing=TRUE)
+
+  # if incl_numdata_plot TRUE, throw error if one DP has no data associated
+  if (any(numdata == 0)) {
+    stop("Can't have incl_numdata_plot TRUE if
+         one or more dpindices have no associated data item")
+  }
+
+  # if different parent indices, warning
+  if (length(unique(pps)) > 1) {
+    warning("some dpindices have different parent nodes,
+            separate plots may be better")
+  }
+
+
 
   # mean exposures
   exposures <- t(dp_distn$mean[dpindices,])
@@ -303,7 +319,7 @@ plot_dp_comp_exposure <- function(sample, dpindices, col, dpnames=NULL,
   # which components to include in this plot
   inc <- which(rowSums(exposures, na.rm=T)>0)
 
-  num_leg_col <- max(1, floor(sqrt(length(inc)))-1)
+  num_leg_col <- floor(sqrt(length(inc)))
 
   if (incl_numdata_plot){
     par(mfrow=c(2, 1), mar=c(1, 4, 2, 0.5), oma=c(1.5, 1.5, 1, 1), cex.axis=0.7)
