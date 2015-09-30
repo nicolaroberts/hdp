@@ -4,11 +4,11 @@
 \alias{plot_dp_comp_exposure}
 \title{Plot the mean distribution over components for each specified DP}
 \usage{
-plot_dp_comp_exposure(chain, dpindices, col, dpnames = NULL,
+plot_dp_comp_exposure(sample, dpindices, col, dpnames = NULL,
   main_text = NULL, incl_numdata_plot = TRUE, incl_nonsig = TRUE)
 }
 \arguments{
-\item{chain}{A hdpSampleChain object including output from \code{\link{hdp_extract_components}}}
+\item{sample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
 
 \item{dpindices}{Indices of DP nodes to plot}
 
@@ -28,15 +28,15 @@ be included (per DP)? (Default TRUE)}
 Plot the mean distribution over components for each specified DP
 }
 \examples{
-tcga_example_comp <- hdp_extract_components(tcga_example_chain)
-plot_dp_comp_exposure(tcga_example_comp, 4:30,
+tcga_example_chain <- hdp_extract_components(tcga_example_chain)
+plot_dp_comp_exposure(tcga_example_chain, 4:30,
                       RColorBrewer::brewer.pal(9, "Set3"))
-plot_dp_comp_exposure(tcga_example_comp, 4:30,
+plot_dp_comp_exposure(tcga_example_chain, 4:30,
                       RColorBrewer::brewer.pal(9, "Set3"),
                       incl_numdata_plot=FALSE, incl_nonsig=FALSE)
-}
-\seealso{
-\code{\link{hdp_extract_components}}, \code{\link{plot_comp_size}},
- \code{\link{plot_comp_distn_bar}}
+# not run (slow):
+# tcga_example_multi <- hdp_extract_components(tcga_example_multi)
+# plot_dp_comp_exposure(tcga_example_multi, 4:30,
+#                       RColorBrewer::brewer.pal(9, "Set3"))
 }
 

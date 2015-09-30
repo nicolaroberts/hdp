@@ -29,6 +29,9 @@ is plotted in black.
 }
 \examples{
 plot_data_assigned(tcga_example_chain, bty="L")
+
+par(mfrow=c(3,2))
+lapply(chains(tcga_example_multi), plot_data_assigned, bty="L")
 }
 \seealso{
 \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},

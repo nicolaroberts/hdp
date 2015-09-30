@@ -4,17 +4,18 @@
 \alias{plot_comp_size}
 \title{Plot number of data items assigned to each component for each posterior sample.}
 \usage{
-plot_comp_size(chain, legend = TRUE, col_early = "hotpink",
-  col_late = "skyblue3", ...)
+plot_comp_size(sample, legend = TRUE, col_a = "hotpink",
+  col_b = "skyblue3", ...)
 }
 \arguments{
-\item{chain}{A hdpSampleChain object including output from \code{\link{hdp_extract_components}}}
+\item{sample}{A hdpSampleChain or hdpSampleMulti object including
+output from \code{\link{hdp_extract_components}}}
 
 \item{legend}{Logical - should a legend be included? (default TRUE)}
 
-\item{col_early}{Color ramp side for early posterior samples}
+\item{col_a}{Color ramp side for early posterior samples (if hdpSampleChain) or first chain (if hdpSampleMulti)}
 
-\item{col_late}{Color ramp side for late posterior samples}
+\item{col_b}{Color ramp side for late posterior samples (if hdpSampleChain) or last chain (if hdpSampleMulti)}
 
 \item{...}{Other arguments to plot}
 }
@@ -22,11 +23,11 @@ plot_comp_size(chain, legend = TRUE, col_early = "hotpink",
 Plot number of data items assigned to each component for each posterior sample.
 }
 \examples{
-tcga_example_comp <- hdp_extract_components(tcga_example_chain)
-plot_comp_size(tcga_example_comp, bty="L")
-}
-\seealso{
-\code{\link{hdp_extract_components}},
- \code{\link{plot_comp_distn_bar}}, \code{\link{plot_dp_comp_exposure}}
+tcga_example_chain <- hdp_extract_components(tcga_example_chain)
+plot_comp_size(tcga_example_chain, bty="L")
+
+# not run (slow):
+# tcga_example_multi <- hdp_extract_components(tcga_example_multi)
+# plot_comp_size(tcga_example_multi, bty="L")
 }
 

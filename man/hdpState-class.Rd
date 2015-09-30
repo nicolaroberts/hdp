@@ -94,5 +94,9 @@ hdpState class for a Hierarchical Dirichlet Process in one state
 \item{\code{cpindex}}{concentration parameter index for each DP}
 
 \item{\code{ttindex}}{DP index of those sharing a concentration parameter}
+
+\item{\code{initcc}}{Number of initial clusters}
+
+\item{\code{seed_activate}}{Random seed used to initiate cluster membership}
 }}
 

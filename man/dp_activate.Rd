@@ -4,7 +4,7 @@
 \alias{dp_activate}
 \title{Activate DP nodes}
 \usage{
-dp_activate(hdp, dpindex, initcc)
+dp_activate(hdp, dpindex, initcc, seed = sample(1:10^7, 1))
 }
 \arguments{
 \item{hdp}{A hdpState object}
@@ -13,6 +13,9 @@ dp_activate(hdp, dpindex, initcc)
 
 \item{initcc}{Number of data clusters to start with
 (every data item is randomly assigned to a cluster to start with)}
+
+\item{seed}{The (integer) seed that can be set to reproduce output. Default is a
+random seed from 1 -- 10^7, reported in the output.}
 }
 \value{
 A hdpState object with activated DPs and an initial random cluster allocation for each data item. See \code{\link{hdpState-class}}

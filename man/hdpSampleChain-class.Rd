@@ -9,23 +9,11 @@
 \alias{clust_dp_counts,hdpSampleChain-method}
 \alias{clust_dp_weights}
 \alias{clust_dp_weights,hdpSampleChain-method}
-\alias{comp_categ_counts}
-\alias{comp_categ_counts,hdpSampleChain-method}
-\alias{comp_categ_distn}
-\alias{comp_categ_distn,hdpSampleChain-method}
-\alias{comp_dp_counts}
-\alias{comp_dp_counts,hdpSampleChain-method}
-\alias{comp_dp_distn}
-\alias{comp_dp_distn,hdpSampleChain-method}
-\alias{comp_dp_weights}
-\alias{comp_dp_weights,hdpSampleChain-method}
 \alias{cp_values}
 \alias{cp_values,hdpSampleChain-method}
 \alias{final_hdpState}
 \alias{final_hdpState,hdpSampleChain-method}
 \alias{hdpSampleChain-class}
-\alias{hdp_comp_settings}
-\alias{hdp_comp_settings,hdpSampleChain-method}
 \alias{hdp_seed}
 \alias{hdp_seed,hdpSampleChain-method}
 \alias{hdp_settings}
@@ -55,18 +43,6 @@
 \S4method{clust_dp_counts}{hdpSampleChain}(x, ...)
 
 \S4method{clust_dp_weights}{hdpSampleChain}(x, ...)
-
-\S4method{hdp_comp_settings}{hdpSampleChain}(x, ...)
-
-\S4method{comp_categ_counts}{hdpSampleChain}(x, ...)
-
-\S4method{comp_dp_counts}{hdpSampleChain}(x, ...)
-
-\S4method{comp_dp_weights}{hdpSampleChain}(x, ...)
-
-\S4method{comp_categ_distn}{hdpSampleChain}(x, ...)
-
-\S4method{comp_dp_distn}{hdpSampleChain}(x, ...)
 }
 \arguments{
 \item{x}{Object of class hdpSampleChain}
@@ -97,18 +73,6 @@ hdpSampleChain class for posterior samples of a hierarchical Dirichlet Process
 \item \code{clust_dp_counts}: Get dp node vs cluster counts for each posterior sample
 
 \item \code{clust_dp_weights}: Get dp node vs cluster weights for each posterior sample
-
-\item \code{hdp_comp_settings}: Get settings of component extraction from HDP posterior sampling chain
-
-\item \code{comp_categ_counts}: Get sample vs category counts for each component
-
-\item \code{comp_dp_counts}: Get sample vs component counts for each DP
-
-\item \code{comp_dp_weights}: Get sample vs component weights for each DP
-
-\item \code{comp_categ_distn}: Get mean distribution over data categories for each component
-
-\item \code{comp_dp_distn}: Get mean distribution over components for each DP
 }}
 \section{Slots}{
 
@@ -141,7 +105,7 @@ with the weights of each cluster per DP. Number of rows is the number of
 DPs (constant), and number of columns is the number of clusters in that
 posterior sample (variable).}
 
-\item{\code{comp_settings}}{Settings of \code{\link{hdp_extract_components}} used to
+\item{\code{comp_settings}}{Settings used to
 consolidate raw clusters (variable number across posterior samples) into
 global components (constant number across posterior samples):
   prop.ex (minimum proportion of data explained), cos.merge (merge components within cosine similarity)}
@@ -154,12 +118,11 @@ columns is the number of data categories.}
 \item{\code{comp_dp_counts}}{List of matrices (one for each DP)
 counting sample-component assignment (aggregating across data categories).
 Number of rows is the number of posterior samples, and number of
-columns is the number of components output from \code{\link{hdp_extract_components}}.}
+columns is the number of components.}
 
 \item{\code{comp_dp_weights}}{List of matrices (one for each DP)
 with the weights of each component per sample. Number of rows is the number of
-posterior samples, and number of columns is the number of components
-output from \code{\link{hdp_extract_components}}.}
+posterior samples, and number of columns is the number of components.}
 
 \item{\code{comp_categ_distn}}{List with elements "mean" and "cred.int", containing
 matrices with the mean (and lower/upper 95% credibility interval) distribution

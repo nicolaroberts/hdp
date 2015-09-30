@@ -18,6 +18,9 @@ Plot number of raw clusters in each posterior sample from the chain
 }
 \examples{
 plot_numcluster(tcga_example_chain, bty="L")
+
+par(mfrow=c(3,2))
+lapply(chains(tcga_example_multi), plot_numcluster, bty="L")
 }
 \seealso{
 \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},

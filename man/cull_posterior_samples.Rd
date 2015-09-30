@@ -19,7 +19,7 @@ A hdpSampleChain object with the designated 'burn-in' period extended,
 Extend the 'burn-in' period and reduce the number of posterior samples taken
 from a sampling chain by culling the first \code{ncull} posterior samples.
 If components have been previously calculated for this sampling chain, they
-will be removed and must be recalculated via \code{\link{hdp_extract_components}}.
+will be removed and must be recalculated.
 }
 \examples{
 chain_adj <- cull_posterior_samples(tcga_example_chain, 20)

@@ -25,6 +25,9 @@ Plot likelihood of HDP posterior sampling chain.
 }
 \examples{
 plot_lik(tcga_example_chain, bty="L")
+
+par(mfrow=c(3,2))
+lapply(chains(tcga_example_multi), plot_lik, bty="L")
 }
 \seealso{
 \code{\link{hdpSampleChain-class}}, \code{\link{plot_numcluster}},
