@@ -1,6 +1,9 @@
 # hdp
 R pkg for Hierarchical Dirichlet Process
 
+[![Build Status](https://travis-ci.org/nicolaroberts/hdp.svg?branch=master)](https://travis-ci.org/nicolaroberts/hdp)
+
+
 To install:
 ```R
 install.packages("devtools")
