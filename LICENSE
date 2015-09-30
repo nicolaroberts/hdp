@@ -38,6 +38,10 @@ File: R/aaa-classes.R
 Copyright: 2015 Nicola D Roberts
 
 
+File: R/aaa-generics-components.R
+Copyright: 2015 Nicola D Roberts
+
+
 File: R/aaa-generics.R
 Copyright: 2015 Nicola D Roberts
 
@@ -72,7 +76,11 @@ Copyright: 2004 Yee Whye Teh
 Comment: Adapted from npbayesr21/hdpmix/hdp_adddp.m by Yee Whye Teh
 
 
-File: R/hdp_extract_components.R
+File: R/hdp_extract_comp_multi.R
+Copyright: 2015 Nicola D Roberts
+
+
+File: R/hdp_extract_comp_single.R
 Copyright: 2015 Nicola D Roberts
 
 
@@ -86,6 +94,10 @@ File: R/hdp_init.R
 Copyright: 2004 Yee Whye Teh
            2015 Nicola D Roberts
 Comment: Adapted from npbayesr21/hdpmix/hdp_init.m by Yee Whye Teh
+
+
+File: R/hdp_multi_chain.R
+Copyright: 2015 Nicola D Roberts
 
 
 File: R/hdp_posterior.R
@@ -108,10 +120,6 @@ File: R/iterate.R
 Copyright: 2004 Yee Whye Teh
            2015 Nicola D Roberts
 Comment: Adapted from npbayesr21/hdpmix/hdp_iterate.m by Yee Whye Teh
-
-
-File: R/plot_hdpSampleChain.R
-Copyright: 2015 Nicola D Roberts
 
 
 File: R/plot_chain.R
