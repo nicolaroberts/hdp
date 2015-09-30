@@ -1,4 +1,4 @@
-# example hdpSampleChain object from real dataset of
+# example hdpSampleChain and hdpSampleMulti object from real dataset of
 # somatic mutation counts in TCGA cancers.
 
 library(GenomicRanges)
@@ -89,10 +89,27 @@ hdp <- hdp_init(ppindex, cpindex, hh=rep(1, 96), alphaa=rep(1, 4), alphab=rep(1,
 hdp <- hdp_setdata(hdp, 4:numdp(hdp), tcga_snv_count_data)
 
 # activate DPs, 8 initial components
-hdp <- dp_activate(hdp, 1:numdp(hdp), 8)
+hdp <- dp_activate(hdp, 1:numdp(hdp), 8, seed=1)
 
 # posterior sampling
 tcga_example_chain <- hdp_posterior(hdp, 3000, 50, 50, 5, seed=10)
 
 # save to data/
 devtools::use_data(tcga_example_chain)
+
+# multiple indep chains
+
+tcga_example_chain_v2 <- hdp_posterior(hdp, 3000, 50, 50, 5, seed=20)
+tcga_example_chain_v3 <- hdp_posterior(hdp, 3000, 50, 50, 5, seed=30)
+tcga_example_chain_v4 <- hdp_posterior(hdp, 3000, 50, 50, 5, seed=40)
+tcga_example_chain_v5 <- hdp_posterior(hdp, 3000, 50, 50, 5, seed=50)
+
+tcga_example_multi <- hdp_multi_chain(list(
+  tcga_example_chain,
+  tcga_example_chain_v2,
+  tcga_example_chain_v3,
+  tcga_example_chain_v4,
+  tcga_example_chain_v5))
+
+# save to data/
+devtools::use_data(tcga_example_multi)
