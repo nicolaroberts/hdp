@@ -22,26 +22,26 @@
  *              Writes a HDP to a matlab struct.  Overwrites fields in
  *              result if necessary.  Frees memory allocated.
  * int hdp_addclass(HDP *hdp)
- *              Adds one new class, increment maxclass if necessary, 
+ *              Adds one new class, increment maxclass if necessary,
  *              returns new number of classes.
  * int hdp_delclass(HDP *hdp,int cc)
- *              Deletes class cc, returns new number of classes. 
+ *              Deletes class cc, returns new number of classes.
  * double hdp_likelihood(HDP *hdp)
- *              Calculates log probability of generating observations in 
- *              active DPs, given current hidden state configuration. 
+ *              Calculates log probability of generating observations in
+ *              active DPs, given current hidden state configuration.
  * void hdp_randconparam(HDP *hdp,int numiter)
- *              Samples concentration parameters. 
+ *              Samples concentration parameters.
  * void hdp_randbeta(HDP *hdp,int jj)
  *              Sample beta (mixing proportions) variables.
  * void hdp_randclassnt(HDP *hdp,int jj)
  *              Sample classnt (number of tables) variables.
  * void hdp_collecttotal(HDP *hdp,int jj)
- *              Sum number of tables and data items per DP. 
+ *              Sum number of tables and data items per DP.
  * void hdp_dpactivate(HDP *hdp, int jj)
- *              Activates DP jj.  Assumes parent is already activates.  
- *              Otherwise crashes. 
+ *              Activates DP jj.  Assumes parent is already activates.
+ *              Otherwise crashes.
  * void hdp_dpholdout(HDP *hdp, int jj)
- *              Holds out DP jj.  Assumes parent is activated.  
+ *              Holds out DP jj.  Assumes parent is activated.
  *              Otherwise crashes.
  * void hdp_iterate(HDP *hdp, double *iterlik, int numiter, int doconparam,
  *     int dolik)
@@ -49,15 +49,15 @@
  *              iterations.  If doconparam>0 then also samples concentration
  *              parameters, for doconparam number of iterations each time.
  *              If dolik is 1 then also calculates and returns the log
- *              probability of data items associated with activated DPs in 
+ *              probability of data items associated with activated DPs in
  *              iterlik.
- * void hdp_predict(HDP *hdp, double *lik, int numburnin, int numsample, 
+ * void hdp_predict(HDP *hdp, double *lik, int numburnin, int numsample,
  *     int numpredict, int *predictjj, int doconparam)
  *              Estimates the log probability of data items in DPs given by
  *              indices in predictjj.  There are numpredict such DPs.  For
- *              each such DP we individually estimate the log probability of 
+ *              each such DP we individually estimate the log probability of
  *              the data items in that DP using the harmonic average
- *              technique of Kass and Raftery 1995, using numburnin number 
+ *              technique of Kass and Raftery 1995, using numburnin number
  *              of burn in iterations, followed by numsample iterations where
  *              we collect the log probabilities.  Returns result in lik,
  *              which in matlab is a numsample x numpredict array of doubles.
@@ -105,7 +105,7 @@ void rWriteHDP(SEXP result, HDP *hdp) {
   pp = pointer + start; \
   pe = pointer + size; \
   while ( pp < pe ) { *pp = zero; pp++; } \
-} 
+}
 int hdp_addclass(HDP *hdp) {
   BASE *base;
   DP *alldp, *dp;
@@ -180,7 +180,7 @@ int hdp_addclass(HDP *hdp) {
     }
   }
  return numclass;
-} 
+}
 
 
 /***************************************************************************/
@@ -195,7 +195,7 @@ int hdp_addclass(HDP *hdp) {
 int hdp_delclass(HDP *hdp, int cc) {
   BASE *base;
   DP *alldp, *dp;
-  int numclass, numdata, numdp, *datacc, *dpstate; 
+  int numclass, numdata, numdp, *datacc, *dpstate;
 
   int ii, jj;
 
@@ -220,7 +220,7 @@ int hdp_delclass(HDP *hdp, int cc) {
       rdebugarray(3,"  new classnt","%2d",dp->classnt,numclass+1);
       numdata = dp->numdata;
       datacc  = dp->datacc;
-      for ( ii = 0 ; ii < numdata ; ii++ ) 
+      for ( ii = 0 ; ii < numdata ; ii++ )
         datacc[ii] -= ( datacc[ii] > cc );
     }
   }
@@ -236,8 +236,8 @@ double hdp_likelihood(HDP *hdp) {
   SS *datass;
   HH hh;
   QQ *classqq;
-  int *datacc, numdp, numdata, *dpstate; 
-  
+  int *datacc, numdp, numdata, *dpstate;
+
   int ii, jj;
   double lik;
 
@@ -266,7 +266,7 @@ double hdp_likelihood(HDP *hdp) {
       numdata = dp->numdata;
       datass  = dp->datass;
       datacc  = dp->datacc;
-      for ( ii = 0 ; ii < numdata ; ii++ ) 
+      for ( ii = 0 ; ii < numdata ; ii++ )
         lik += adddatalik(hh,classqq[datacc[ii]],datass[ii]);
     }
   }
@@ -278,11 +278,11 @@ double hdp_likelihood(HDP *hdp) {
 void hdp_randconparam(HDP *hdp, int numiter) {
   DP *alldp, *dp;
   CONPARAM *allconparam, *conparam;
-  int numconparam, numdp, *dpstate, *cpindex; 
+  int numconparam, numdp, *dpstate, *cpindex;
 
   int cp, jj;
 
-  rdebug0(2,"sample conparam. "); 
+  rdebug0(2,"sample conparam. ");
 
   /* sample alpha */
   allconparam = hdp->conparam;
@@ -297,7 +297,7 @@ void hdp_randconparam(HDP *hdp, int numiter) {
     conparam->alpha = randconparam(conparam->alpha,
         conparam->numdp,conparam->totalnd,conparam->totalnt,
         conparam->alphaa,conparam->alphab,numiter);
-    rdebug1(3," newalpha %1.3g.\n",conparam->alpha); 
+    rdebug1(3," newalpha %1.3g.\n",conparam->alpha);
   }
 
   /* update DP's alphas */
@@ -310,7 +310,7 @@ void hdp_randconparam(HDP *hdp, int numiter) {
       dp->alpha = allconparam[cp].alpha;
     }
   }
-} 
+}
 
 /***************************************************************************/
 void hdp_randbeta(HDP *hdp, int jj) {
@@ -336,7 +336,7 @@ void hdp_randbeta(HDP *hdp, int jj) {
   for ( cc = 0 ; cc <= numclass ; cc++ )
     clik[cc] = classnd[cc] + alpha*beta[cc];
   randdir(dp->beta,clik,numclass+1,1);
-  rdebugarray(3,"\n  beta","%1.3g",dp->beta,numclass+1); 
+  rdebugarray(3,"\n  beta","%1.3g",dp->beta,numclass+1);
 }
 
 void hdp_randclassnt(HDP *hdp, int jj) {
@@ -346,7 +346,7 @@ void hdp_randclassnt(HDP *hdp, int jj) {
   double alpha, *beta;
   int *classnd, *classnt, *pclassnd;
 
-  /* temp variables */ 
+  /* temp variables */
   int cc, pp; // deleted tt, nd, sp, nt because compiler said they were unused
 
   conparam = hdp->conparam;
@@ -371,12 +371,12 @@ void hdp_randclassnt(HDP *hdp, int jj) {
     beta     = alldp[pp].beta;
     for ( cc = 0 ; cc < numclass ; cc++ ) {
       pclassnd[cc] -= classnt[cc];
-      pclassnd[cc] += ( classnt[cc] = 
+      pclassnd[cc] += ( classnt[cc] =
                         randnumtable(alpha*beta[cc],classnd[cc]) );
     }
     rdebugarray(3,"  new classnt","%d",classnt,numclass+1);
-  } 
-} 
+  }
+}
 
 void hdp_collecttotal(HDP *hdp, int jj) {
   DP *dp;
@@ -387,21 +387,21 @@ void hdp_collecttotal(HDP *hdp, int jj) {
   conparam = hdp->conparam;
   numclass = hdp->base->numclass;
   dp       = hdp->dp + jj;
-  
+
   cp       = hdp->cpindex[jj];
   tt       = hdp->ttindex[jj];
   classnd  = dp->classnd;
   classnt  = dp->classnt;
   nd = 0;
   nt = 0;
-  
+
   for ( cc = 0 ; cc < numclass ; cc++ ) {
     nd += classnd[cc];
     nt += classnt[cc];
   }
   conparam[cp].totalnd[tt] = nd;
   conparam[cp].totalnt[tt] = nt;
-} 
+}
 
 void hdp_randdatacc(HDP *hdp, int jj) {
   /* variables to be read in from hdp struct */
@@ -414,7 +414,7 @@ void hdp_randdatacc(HDP *hdp, int jj) {
   double alpha, *beta;
   int *classnd, *classnt;
 
-  /* temp variables */ 
+  /* temp variables */
   int ii, cc; //deleted unused variable kk
   double *clik;
 
@@ -444,14 +444,14 @@ void hdp_randdatacc(HDP *hdp, int jj) {
     rdebug4(3,"\n  DP %d item %d oldcc %d numclass %d.\n",
         jj,ii,cc,numclass);
 
-    /* sample class assignment for each data item */ 
+    /* sample class assignment for each data item */
     rdebug0(3,"  remove data.\n");
     deldata(hh,classqq[cc],ss);
     rdebugarray(3,"  old classnd","%d",classnd,numclass+1);
     classnd[cc] -= 1;
 
     marglikelihoods(clik,hh,numclass+1,classqq,ss);
-    for ( cc = 0 ; cc <= numclass ; cc++ ) 
+    for ( cc = 0 ; cc <= numclass ; cc++ )
       clik[cc] *= classnd[cc] + alpha*beta[cc];
 
     rdebugarray(3,"  clik","%1.3g",clik,numclass+1);
@@ -471,8 +471,8 @@ void hdp_randdatacc(HDP *hdp, int jj) {
       beta     = pp == -1 ? base->beta : alldp[pp].beta;
       clik     = hdp->clik;
     }
-  } 
-} 
+  }
+}
 
 /***************************************************************************/
 void hdp_iterate(HDP *hdp, double *iterlik,
@@ -524,7 +524,7 @@ void hdp_dpactivate(HDP *hdp, int jj) {
   HH hh;
   QQ *classqq;
   double *beta;
-  int numclass, maxclass, pp, cp, *classnd, *classnt, numdata, *datacc, 
+  int numclass, maxclass, pp, cp, *classnd, *classnt, numdata, *datacc,
         *dpstate;
   SS *datass;
   int cc, ii;
@@ -555,7 +555,7 @@ void hdp_dpactivate(HDP *hdp, int jj) {
       adddata(hh,classqq[cc],datass[ii]);
       classnd[cc] += 1;
     }
-    for ( cc = 0 ; cc < maxclass ; cc++ ) 
+    for ( cc = 0 ; cc < maxclass ; cc++ )
       classnt[cc] = classnd[cc];
 
     pp = hdp->ppindex[jj];
@@ -571,7 +571,7 @@ void hdp_dpactivate(HDP *hdp, int jj) {
   cp        = hdp->cpindex[jj];
   dp->alpha = conparam[cp].alpha;
   dp->beta  = beta = malloc(sizeof(double)*maxclass);
-  for ( cc = 0 ; cc < maxclass ; cc++ ) 
+  for ( cc = 0 ; cc < maxclass ; cc++ )
     beta[cc] = 0.0;
   hdp_randbeta(hdp,jj);
   hdp_collecttotal(hdp,jj);
@@ -588,7 +588,7 @@ void hdp_dpholdout(HDP *hdp, int jj) {
   int numclass, numdata, pp, cp, tt, *classnd, *classnt, *pclassnd, *datacc,
         *dpstate, *ppindex;
 
-  int cc, ii; 
+  int cc, ii;
 
   rdebug1(1,"Holding out DP %d.\n",jj);
   alldp    = hdp->dp;
@@ -636,7 +636,7 @@ void hdp_dpholdout(HDP *hdp, int jj) {
   dpstate[jj] = HELDOUT;
 }
 
-void hdp_predict(HDP *hdp, double *lik, int numburnin, int numsample, 
+void hdp_predict(HDP *hdp, double *lik, int numburnin, int numsample,
     int numpredict, int *predictjj, int doconparam) {
   int jj;
 

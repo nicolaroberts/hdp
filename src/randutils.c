@@ -5,7 +5,7 @@ double randgamma(double rr) {
   double uu, vv, ww, xx, yy, zz;
 
   if ( rr <= 0.01) {
-    /* Not well defined, set to zero and skip. */
+    /* Not well defined, set to zero or value and skip. */
     if (rr<=0.0) {
       return 0.0;
     } else {
@@ -13,21 +13,21 @@ double randgamma(double rr) {
     }
   } else if ( rr == 1.0 ) {
     /* Exponential */
-    return - log(drand48());
+    return - log(unif_rand());
   } else if ( rr < 1.0 ) {
     /* Use Johnks generator */
     cc = 1.0 / rr;
     dd = 1.0 / (1.0-rr);
     while (1) {
-      xx = pow(drand48(), cc);
-      yy = xx + pow(drand48(), dd);
+      xx = pow(unif_rand(), cc);
+      yy = xx + pow(unif_rand(), dd);
       if ( yy <= 1.0 ) {
 
-        if((-log(drand48()) * xx / yy) == 0){
+        if((-log(unif_rand()) * xx / yy) == 0){
           rdebug3(1,"\n  xx %f: yy: %f cc: %f",xx,yy,cc);
         }
 
-        return -log(drand48()) * xx / yy;
+        return -log(unif_rand()) * xx / yy;
       }
     }
   } else { /* rr > 1.0 */
@@ -35,8 +35,8 @@ double randgamma(double rr) {
     bb = rr - 1.0;
     cc = 3.0 * rr - 0.75;
     while (1) {
-      uu = drand48();
-      vv = drand48();
+      uu = unif_rand();
+      vv = unif_rand();
       ww = uu * (1.0 - uu);
       yy = sqrt(cc / ww) * (uu - 0.5);
       xx = bb + yy;
@@ -59,8 +59,8 @@ int randnumtable(double alpha, int numdata) {
   } else {
     numtable = 1;
     for ( ii = 1 ; ii < numdata ; ii++ ) {
-      //Rprintf("drand: %d", drand48());
-      if ( drand48() < alpha / (ii+alpha) ) numtable++; //was drand48()
+      //Rprintf("drand: %d", unif_rand());
+      if ( unif_rand() < alpha / (ii+alpha) ) numtable++;
     }
     return numtable;
   }
@@ -95,7 +95,7 @@ int randmult(double *pi, int veclength, int skip) {
   piend = pi + veclength*skip;
   for ( pi2 = pi ; pi2 < piend ; pi2 += skip )
     sum += *pi2;
-  mass = drand48() * sum;
+  mass = unif_rand() * sum;
   while (1) {
     mass -= *pi;
     if ( mass <= 0.0 ) break;
@@ -106,7 +106,7 @@ int randmult(double *pi, int veclength, int skip) {
 }
 
 int randuniform(int numvalue) {
-  return floor(drand48() * numvalue);
+  return floor(unif_rand() * numvalue);
 }
 
 double randconparam(double alpha, int numgroup, int *numdata, int *numtable,
@@ -119,8 +119,8 @@ double randconparam(double alpha, int numgroup, int *numdata, int *numtable,
     for ( jj = 0 ; jj < numgroup ; jj++ ) {
       nd = numdata[jj];
       xx = randbeta(alpha+1.0, nd);
-      zz = ( drand48() * (alpha + nd) < nd );
-      
+      zz = ( unif_rand() * (alpha + nd) < nd );
+
       aa += numtable[jj] - zz;
       bb -= log(xx);
     }
