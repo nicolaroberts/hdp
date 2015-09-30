@@ -11,7 +11,8 @@ Imports:
     lsa,
     methods,
     flexclust,
-    coda
+    coda,
+    clue
 LazyData: true
 Description: Model categorical count data with a hierarchical tree of Dirichlet
     Processes. Includes functions to initialise a HDP with a custom tree
@@ -31,7 +32,9 @@ Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     GenomicRanges,
     Biostrings,
-    RColorBrewer
+    RColorBrewer,
+    knitr,
+    rmarkdown
 Collate:
     'aaa-classes.R'
     'hdp_extract_comp_single.R'
@@ -59,3 +62,4 @@ Collate:
     'stirling.R'
     'utilities.R'
     'zzz.R'
+VignetteBuilder: knitr
