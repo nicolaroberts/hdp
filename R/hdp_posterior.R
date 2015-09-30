@@ -42,7 +42,9 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
   if (seed %% 1 != 0) stop("seed must be an integer")
 
   # set seed
-  set.seed(seed)
+  set.seed(seed, kind="Mersenne-Twister", normal.kind="Inversion")
+
+
 
   # function to return difference in time in minute units
   mindifftime <- function(t1, t2){
@@ -53,16 +55,22 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
   totiter <- burnin + n * space
   lik     <- rep(0, totiter)
 
+
+
   # translate hdp hdpState (S4 class) to plain list so C code can parse
   hdplist <- as.list(hdp)
 
   # record start time
   starttime <- Sys.time()
 
+
+
   # run burn in iterations, update hdplist, fill in lik
   output <- iterate(hdplist, burnin, cpiter, verbosity)
   hdplist <- output[[1]]
   lik[1:burnin] <- output[[2]]
+
+
 
   #report burn-in time
   prevtime <- Sys.time()
@@ -75,6 +83,7 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
 
   # collect n posterior samples
   for (samp in 1:n){
+
     output <- iterate(hdplist, space, cpiter, verbosity)
     hdplist <- output[[1]]
     lik[burnin + (samp-1) * space + (1:space)] <- output[[2]]
@@ -91,6 +100,8 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
     }
   }
 
+
+
   numclass <- sapply(sample, function(x) x$numclass)
   classqq <- lapply(sample, function(x) x$classqq)
   classnd <- lapply(sample, function(x) x$classnd)
@@ -105,6 +116,8 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
   #translate hdplist back to HDPObject class
   hdp <- as.hdpState(hdplist)
   remove(hdplist)
+
+
 
   ans <- new("hdpSampleChain",
              seed = as.integer(seed),
