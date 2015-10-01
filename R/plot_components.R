@@ -1,6 +1,6 @@
 #' Plot number of data items assigned to each component for each posterior sample.
 #'
-#' @param sample A hdpSampleChain or hdpSampleMulti object including
+#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including
 #'  output from \code{\link{hdp_extract_components}}
 #' @param legend Logical - should a legend be included? (default TRUE)
 #' @param col_a Color ramp side for early posterior samples (if hdpSampleChain) or first chain (if hdpSampleMulti)
@@ -16,38 +16,38 @@
 #' # plot_comp_size(tcga_example_multi, bty="L")
 #'
 
-plot_comp_size <- function(sample, legend=TRUE, col_a="hotpink",
+plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
                            col_b="skyblue3", ...){
 
   # input checks
-  if (!class(sample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
-    stop("sample must have class hdpSampleChain or hdpSampleMulti")
+  if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
+    stop("hdpsample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(sample)) stop("sample not valid")
-  if (length(comp_categ_counts(sample)) == 0) {
-    stop("No component info for sample. First run hdp_extract_component")
+  if (!validObject(hdpsample)) stop("hdpsample not valid")
+  if (length(comp_categ_counts(hdpsample)) == 0) {
+    stop("No component info for hdpsample. First run hdp_extract_component")
   }
   if(class(legend) != "logical") stop("legend must be TRUE or FALSE")
 
 
-  sums <- t(sapply(comp_categ_counts(sample), rowSums))
+  sums <- t(sapply(comp_categ_counts(hdpsample), rowSums))
 
   # colour ramp across posterior samples
   cols <- colorRampPalette(colors=c(col_a, col_b))
 
   # colour vector
 
-  if (class(sample) == "hdpSampleChain") {
+  if (class(hdpsample) == "hdpSampleChain") {
     mycols <- cols(ncol(sums))
     legtext <- c("Early samples", "Late samples")
-  } else if (class(sample) == "hdpSampleMulti") {
-    postsamps <- sapply(chains(sample), function(x) length(numcluster(x)))
+  } else if (class(hdpsample) == "hdpSampleMulti") {
+    postsamps <- sapply(chains(hdpsample), function(x) length(numcluster(x)))
     mycols <- rep(cols(length(postsamps)), postsamps)
     legtext <- c("First chain", "Last chain")
   }
 
-  matplot(x=0:(nrow(sums)-1), sums, pch=1, col=mycols,
-          xlab="Component", ylab="Number of data items", ...)
+  plot(x=jitter(rep(0:(nrow(sums)-1), ncol(sums))), xlab="Component",
+       y=as.vector(sums), pch=1, col=mycols, ylab="Number of data items", ...)
 
   if (legend) {
     legend("topright", col=c(col_a, col_b), pch=1, legend=legtext, bty="n")
@@ -58,7 +58,7 @@ plot_comp_size <- function(sample, legend=TRUE, col_a="hotpink",
 
 #' Barplot of the mean distribution over data categories for each component
 #'
-#' @param sample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
+#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
 #' @param comp (Optional) Number(s) of the component(s) to plot (from 0 to the max component number).
 #'  The default is to plot all components.
 #' @param cat_names (Optional) Data category names to label the horizontal axis
@@ -92,27 +92,27 @@ plot_comp_size <- function(sample, legend=TRUE, col_a="hotpink",
 #' #                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
 #' #                 col_nonsig="grey80", show_group_labels=TRUE)
 
-plot_comp_distn <- function(sample, comp=NULL, cat_names=NULL,
+plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
                             grouping=NULL, col="grey70", col_nonsig=NULL,
                             show_group_labels=FALSE, cred_int=TRUE,
                             weights=NULL){
 
   # input checks
-  if (!class(sample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
-    stop("sample must have class hdpSampleChain or hdpSampleMulti")
+  if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
+    stop("hdpsample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(sample)) stop("sample not valid")
-  if (length(comp_categ_counts(sample)) == 0) {
-    stop("No component info for sample. First run hdp_extract_comp_single")
-  }
-
-  if (class(sample) == "hdpSampleChain") {
-    ncat <- numcateg(final_hdpState(sample))
-  } else if (class(sample) == "hdpSampleMulti") {
-    ncat <- numcateg(final_hdpState(chains(sample)[[1]]))
+  if (!validObject(hdpsample)) stop("hdpsample not valid")
+  if (length(comp_categ_counts(hdpsample)) == 0) {
+    stop("No component info for hdpsample. First run hdp_extract_comp_single")
   }
 
-  comp_distn <- comp_categ_distn(sample)
+  if (class(hdpsample) == "hdpSampleChain") {
+    ncat <- numcateg(final_hdpState(hdpsample))
+  } else if (class(hdpsample) == "hdpSampleMulti") {
+    ncat <- numcateg(final_hdpState(chains(hdpsample)[[1]]))
+  }
+
+  comp_distn <- comp_categ_distn(hdpsample)
   ncomp <- nrow(comp_distn$mean)-1
   if (class(comp) != "NULL") {
     if (class(comp) != "numeric" | any(comp %% 1 != 0) |
@@ -215,7 +215,7 @@ plot_comp_distn <- function(sample, comp=NULL, cat_names=NULL,
 
 #' Plot the mean distribution over components for each specified DP
 #'
-#' @param sample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
+#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
 #' @param dpindices Indices of DP nodes to plot
 #' @param col Colours of each component, from 0 to the max number
 #' @param dpnames (Optional) Names of the DP nodes
@@ -237,19 +237,19 @@ plot_comp_distn <- function(sample, comp=NULL, cat_names=NULL,
 #' # plot_dp_comp_exposure(tcga_example_multi, 4:30,
 #' #                       RColorBrewer::brewer.pal(9, "Set3"))
 
-plot_dp_comp_exposure <- function(sample, dpindices, col, dpnames=NULL,
+plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
                                 main_text=NULL, incl_numdata_plot=TRUE,
                                 incl_nonsig=TRUE){
 
   # input checks
-  if (!class(sample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
-    stop("sample must have class hdpSampleChain or hdpSampleMulti")
+  if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
+    stop("hdpsample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(sample)) stop("sample not valid")
-  if (length(comp_categ_counts(sample)) == 0) {
-    stop("No component info for sample. First run hdp_extract_comp_single")
+  if (!validObject(hdpsample)) stop("hdpsample not valid")
+  if (length(comp_categ_counts(hdpsample)) == 0) {
+    stop("No component info for hdpsample. First run hdp_extract_comp_single")
   }
-  dp_distn <- comp_dp_distn(sample)
+  dp_distn <- comp_dp_distn(hdpsample)
   ndp <- nrow(dp_distn$mean)
   ncomp <- ncol(dp_distn$mean)
   if (!is.numeric(dpindices) | any(dpindices %% 1 != 0) |
@@ -279,12 +279,12 @@ plot_dp_comp_exposure <- function(sample, dpindices, col, dpnames=NULL,
   on.exit(par(par_old), add=TRUE)
 
   # Number of data items per DP
-  if (class(sample) == "hdpSampleChain") {
-    dps <- dp(final_hdpState(sample))[dpindices]
-    pps <- ppindex(final_hdpState(sample))[dpindices]
-  } else if (class(sample) == "hdpSampleMulti") {
-    dps <- dp(final_hdpState(chains(sample)[[1]]))[dpindices]
-    pps <- ppindex(final_hdpState(chains(sample)[[1]]))[dpindices]
+  if (class(hdpsample) == "hdpSampleChain") {
+    dps <- dp(final_hdpState(hdpsample))[dpindices]
+    pps <- ppindex(final_hdpState(hdpsample))[dpindices]
+  } else if (class(hdpsample) == "hdpSampleMulti") {
+    dps <- dp(final_hdpState(chains(hdpsample)[[1]]))[dpindices]
+    pps <- ppindex(final_hdpState(chains(hdpsample)[[1]]))[dpindices]
   }
 
   numdata <- sapply(dps, function(x) x@numdata)
