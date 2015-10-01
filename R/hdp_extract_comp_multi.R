@@ -1,4 +1,4 @@
-hdp_extract_comp_multi <- function(chains, cos.merge=0.90){
+hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   # input checks
   if (class(chains) != "hdpSampleMulti") {
@@ -8,6 +8,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90){
   if (class(cos.merge) != "numeric" | cos.merge >=1 | cos.merge <= 0) {
     stop("cos.merge must be between 0 and 1")
   }
+  if (class(redo) != "logical") stop("redo must be TRUE or FALSE")
 
 
   # function to merge cols of a matrix according to new (numeric) column labels
@@ -48,6 +49,9 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90){
 
   # extract components on each chain
   for (i in 1:nch){
+
+    if (!redo & length(comp_categ_counts(chlist[[i]])) > 0) next
+
     chlist[[i]] <- hdp_extract_comp_single(chlist[[i]],
                                            prop.ex=0.999, cos.merge=cos.merge)
   }
