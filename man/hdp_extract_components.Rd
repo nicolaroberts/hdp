@@ -7,12 +7,11 @@
 \alias{hdp_extract_components,hdpSampleMulti-method}
 \title{Extract major components from the raw clusters}
 \usage{
-hdp_extract_components(x, cos.merge = 0.9, prop.ex = 0.97)
+hdp_extract_components(x, cos.merge = 0.9, prop.ex = 0.97, redo = TRUE)
 
-\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge = 0.9,
-  prop.ex = 0.97)
+\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge, prop.ex)
 
-\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge)
+\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge, redo)
 }
 \arguments{
 \item{x}{hdpSampleChain or hdpSampleMulti object}
@@ -21,6 +20,9 @@ hdp_extract_components(x, cos.merge = 0.9, prop.ex = 0.97)
 
 \item{prop.ex}{The proportion of data items explained by the components (default 0.97).
 Only used for hdpSampleChain as this can be calculated automatically for hdpMultiChain objects.}
+
+\item{redo}{Logical. If true - constituent chains with previously calculated components
+will be re-calculated. Only used for hdpSampleMulti.}
 }
 \value{
 A hdpSampleChain or hdpSampleMulti object updated with component information

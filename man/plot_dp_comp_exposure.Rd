@@ -4,11 +4,11 @@
 \alias{plot_dp_comp_exposure}
 \title{Plot the mean distribution over components for each specified DP}
 \usage{
-plot_dp_comp_exposure(sample, dpindices, col, dpnames = NULL,
+plot_dp_comp_exposure(hdpsample, dpindices, col, dpnames = NULL,
   main_text = NULL, incl_numdata_plot = TRUE, incl_nonsig = TRUE)
 }
 \arguments{
-\item{sample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
+\item{hdpsample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
 
 \item{dpindices}{Indices of DP nodes to plot}
 

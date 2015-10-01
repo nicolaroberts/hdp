@@ -4,12 +4,12 @@
 \alias{plot_comp_distn}
 \title{Barplot of the mean distribution over data categories for each component}
 \usage{
-plot_comp_distn(sample, comp = NULL, cat_names = NULL, grouping = NULL,
+plot_comp_distn(hdpsample, comp = NULL, cat_names = NULL, grouping = NULL,
   col = "grey70", col_nonsig = NULL, show_group_labels = FALSE,
   cred_int = TRUE, weights = NULL)
 }
 \arguments{
-\item{sample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
+\item{hdpsample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
 
 \item{comp}{(Optional) Number(s) of the component(s) to plot (from 0 to the max component number).
 The default is to plot all components.}

@@ -4,11 +4,11 @@
 \alias{plot_comp_size}
 \title{Plot number of data items assigned to each component for each posterior sample.}
 \usage{
-plot_comp_size(sample, legend = TRUE, col_a = "hotpink",
+plot_comp_size(hdpsample, legend = TRUE, col_a = "hotpink",
   col_b = "skyblue3", ...)
 }
 \arguments{
-\item{sample}{A hdpSampleChain or hdpSampleMulti object including
+\item{hdpsample}{A hdpSampleChain or hdpSampleMulti object including
 output from \code{\link{hdp_extract_components}}}
 
 \item{legend}{Logical - should a legend be included? (default TRUE)}
