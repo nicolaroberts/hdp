@@ -166,7 +166,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   # proportion of data explained by extracted components?
   avcount <- colMeans(sapply(ccc, rowSums, na.rm=TRUE), na.rm=TRUE)
-  chains@prop.ex <- round(1-avcount[1]/sum(avcount), 2)
+  chains@prop.ex <- round(1-avcount[1]/sum(avcount), 3)
 
   # add extracted components into hdpSampleMulti slots
   chains@comp_categ_counts <- ccc
