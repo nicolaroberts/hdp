@@ -51,7 +51,7 @@ cull_posterior_samples <- function(chain, ncull){
   # clust_categ_counts, clust_dp_counts, and clust_dp_weights
 
   chain@numcluster <- chain@numcluster[-(1:ncull)]
-  chain@cp_values <- chain@cp_values[-(1:ncull),]
+  chain@cp_values <- as.matrix(chain@cp_values[-(1:ncull),])
   chain@clust_categ_counts <- chain@clust_categ_counts[-(1:ncull)]
   chain@clust_dp_counts <- chain@clust_dp_counts[-(1:ncull)]
   chain@clust_dp_weights <- chain@clust_dp_weights[-(1:ncull)]
