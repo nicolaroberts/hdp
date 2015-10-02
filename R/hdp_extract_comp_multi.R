@@ -38,7 +38,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
     for (label in names(ans)){
       ans[[label]] <- Reduce("+", lst[which(labels == label)])
     }
-    return(ans)
+    return(ans[sort(names(ans))])
   }
 
   chains@comp_settings <- list(cos.merge=cos.merge)
