@@ -95,13 +95,42 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   remove(comp_count, discard)
 
 
+
   # Now have comp_mapping, consolidate all stats from all chains
 
   ncomp <- length(unique(comp_mapping[[1]]))
 
-  # comp_categ_counts
+  # comp_categ_counts (rename overall comps so sorted by mean size)
   ccclist <- lapply(chlist, comp_categ_counts)
   cccmerge <- mapply(merge_elems, ccclist, comp_mapping)
+  ranks <- rank(rowMeans(matrix(sapply(cccmerge, sum), nrow=ncomp)))
+  names(ranks) <- rownames(cccmerge)
+
+  dummy <- 1
+  while (any(diff(ranks)[-1] > 0)){
+    dummy <- dummy + 1
+    which.switch <- which(diff(ranks)[-1] > 0)[1]
+    to.switch <- names(ranks)[which.switch+1:2]
+    one <- lapply(comp_mapping, function(x) which(x == to.switch[1]))
+    two <- lapply(comp_mapping, function(x) which(x == to.switch[2]))
+    comp_mapping <- mapply(function(x, y) {
+      x[y] <- to.switch[2]
+      return(x)
+      }, comp_mapping, one, SIMPLIFY=FALSE)
+
+    comp_mapping <- mapply(function(x, y) {
+      x[y] <- to.switch[1]
+      return(x)
+    }, comp_mapping, two, SIMPLIFY=FALSE)
+
+    cccmerge <- mapply(merge_elems, ccclist, comp_mapping)
+    ranks <- rank(rowMeans(matrix(sapply(cccmerge, sum), nrow=ncomp)))
+    names(ranks) <- rownames(cccmerge)
+
+    if (dummy > 10) break
+
+  }
+
   ccc <- vector("list", nrow(cccmerge))
   names(ccc) <- rownames(cccmerge)
   for (i in 1:length(ccc)){
