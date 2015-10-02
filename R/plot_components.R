@@ -291,7 +291,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
   dp_order <- order(numdata, decreasing=TRUE)
 
   # if incl_numdata_plot TRUE, throw error if one DP has no data associated
-  if (any(numdata == 0)) {
+  if (incl_numdata_plot & any(numdata == 0)) {
     stop("Can't have incl_numdata_plot TRUE if
          one or more dpindices have no associated data item")
   }
