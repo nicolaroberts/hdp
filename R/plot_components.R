@@ -180,7 +180,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 
     # main barplot
     b <- barplot(sig, col=cat_cols_copy, xaxt="n", ylim=c(0,plottop*1.1),
-                 border=NA, names.arg=rep("",96), xpd=F,
+                 border=NA, names.arg=rep("", ncat), xpd=F,
                  main=paste("Component", ii))
 
     # add credibility intervals
