@@ -642,7 +642,7 @@ setMethod("comp_dp_weights",
 #' Get mean distribution over data categories for each component
 #' @param x hdpSampleChain or hdpSampleMulti
 #' @return List with elements "mean" and "cred.int", containing
-#'  matrices with the mean (and lower/upper 95% credibility interval) distribution
+#'  matrices with the mean (and lower/upper 95\% credibility interval) distribution
 #'  over data categories for each component. Number of rows is the number of
 #'  components, and number of columns is the number of data categories. Rows sum to 1.
 #' @aliases comp_categ_distn
@@ -670,7 +670,7 @@ setMethod("comp_categ_distn",
 #' Get mean distribution over components for each DP
 #' @param x hdpSampleChain or hdpSampleMulti
 #' @return List with elements "mean" and "cred.int", containing
-#'  matrices with the mean (and lower/upper 95% credibility interval) distribution
+#'  matrices with the mean (and lower/upper 95\% credibility interval) distribution
 #'  over components for each DP. Number of rows is the number of
 #'  DPs, and number of columns is the number of components. Rows sum to 1.
 #' @aliases comp_dp_distn
