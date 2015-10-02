@@ -18,7 +18,7 @@ comp_categ_distn(x)
 }
 \value{
 List with elements "mean" and "cred.int", containing
- matrices with the mean (and lower/upper 95% credibility interval) distribution
+ matrices with the mean (and lower/upper 95\% credibility interval) distribution
  over data categories for each component. Number of rows is the number of
  components, and number of columns is the number of data categories. Rows sum to 1.
 }

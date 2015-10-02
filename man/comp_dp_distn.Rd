@@ -18,7 +18,7 @@ comp_dp_distn(x)
 }
 \value{
 List with elements "mean" and "cred.int", containing
- matrices with the mean (and lower/upper 95% credibility interval) distribution
+ matrices with the mean (and lower/upper 95\% credibility interval) distribution
  over components for each DP. Number of rows is the number of
  DPs, and number of columns is the number of components. Rows sum to 1.
 }
