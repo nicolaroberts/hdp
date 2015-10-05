@@ -3,6 +3,13 @@
 language: r
 warnings_are_errors: true
 sudo: required
+bioc_packages:
+  - BiocStyle
+  - SomaticCancerAlterations
+  - GenomicRanges
+  - BSgenome.Hsapiens.UCSC.hg19
+  - Biostrings
+
 
 env:
   global:
