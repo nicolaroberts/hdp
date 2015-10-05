@@ -4,11 +4,13 @@ R pkg for Hierarchical Dirichlet Process
 [![Build Status](https://travis-ci.org/nicolaroberts/hdp.svg?branch=master)](https://travis-ci.org/nicolaroberts/hdp)
 
 
-To install:
+To install, ensure `devtools` package is installed and the BioConductor repositories are available (run `setRepositories()`). 
 ```R
-install.packages("devtools")
-devtools::install_github("nicolaroberts/hdp")
+devtools::install_github("nicolaroberts/hdp", build_vignettes = TRUE)
 ```
+
+For tutorials, see `browseVignettes("hdp")`. 
+
 
 R package to model categorical count data with a hierarchical tree of Dirichlet Processes. Includes functions to initialise a HDP of any shape, perform Gibbs sampling of the posterior distribution, and analyse the output. The underlying theory is described by Teh et al. (Hierarchical Dirichlet Processes, Journal of the American Statistical Association, 2006, 101:476). This R package was adapted from open source MATLAB and C code written by Yee Whye Teh and available here http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz
 
