@@ -34,7 +34,9 @@ Suggests:
     Biostrings,
     RColorBrewer,
     knitr,
-    rmarkdown
+    rmarkdown,
+    BiocStyle,
+    devtools
 Collate:
     'aaa-classes.R'
     'hdp_extract_comp_single.R'
