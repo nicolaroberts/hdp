@@ -93,11 +93,6 @@ setClass("hdpDP",
              is_valid <- FALSE
              message("length of datass and datacc must be numdata")
            }
-           if (length(object@classnd) != length(object@beta) |
-                 length(object@classnt) != length(object@beta)) {
-             is_valid <- FALSE
-             message("length of classnd and classnt must be length of beta")
-           }
            return(is_valid)
          })
 
