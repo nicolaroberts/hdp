@@ -14,7 +14,7 @@
 #' @seealso \code{\link{plot_lik}}, \code{\link{plot_numcluster}},
 #'  \code{\link{plot_data_assigned}}
 #' @examples
-#' chain_adj <- cull_posterior_samples(tcga_example_chain, 20)
+#' chain_adj <- cull_posterior_samples(mut_example_chain, 20)
 #' plot_lik(chain_adj)
 #' plot_numcluster(chain_adj)
 #' plot_data_assigned(chain_adj)
