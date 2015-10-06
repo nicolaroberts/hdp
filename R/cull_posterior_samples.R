@@ -50,11 +50,11 @@ cull_posterior_samples <- function(chain, ncull){
   # cut first ncull elements of numcluster, cp_values,
   # clust_categ_counts, clust_dp_counts, and clust_dp_weights
 
-  chain@numcluster <- chain@numcluster[-(1:ncull)]
-  chain@cp_values <- as.matrix(chain@cp_values[-(1:ncull),])
-  chain@clust_categ_counts <- chain@clust_categ_counts[-(1:ncull)]
-  chain@clust_dp_counts <- chain@clust_dp_counts[-(1:ncull)]
-  chain@clust_dp_weights <- chain@clust_dp_weights[-(1:ncull)]
+  chain@numcluster <- chain@numcluster[-c(1:ncull)]
+  chain@cp_values <- as.matrix(chain@cp_values[-c(1:ncull),])
+  chain@clust_categ_counts <- chain@clust_categ_counts[-c(1:ncull)]
+  chain@clust_dp_counts <- chain@clust_dp_counts[-c(1:ncull)]
+  chain@clust_dp_weights <- chain@clust_dp_weights[-c(1:ncull)]
 
   # check validity and return
   if (!validObject(chain)) warning("Not a valid hdpSampleChain object.")

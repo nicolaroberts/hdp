@@ -114,14 +114,16 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
     one <- lapply(comp_mapping, function(x) which(x == to.switch[1]))
     two <- lapply(comp_mapping, function(x) which(x == to.switch[2]))
     comp_mapping <- mapply(function(x, y) {
-      x[y] <- to.switch[2]
-      return(x)
-      }, comp_mapping, one, SIMPLIFY=FALSE)
+        x[y] <- to.switch[2]
+        return(x)
+      },
+      comp_mapping, one, SIMPLIFY=FALSE)
 
     comp_mapping <- mapply(function(x, y) {
-      x[y] <- to.switch[1]
-      return(x)
-    }, comp_mapping, two, SIMPLIFY=FALSE)
+          x[y] <- to.switch[1]
+          return(x)
+        },
+        comp_mapping, two, SIMPLIFY=FALSE)
 
     cccmerge <- mapply(merge_elems, ccclist, comp_mapping)
     ranks <- rank(rowMeans(matrix(sapply(cccmerge, sum), nrow=ncomp)))
@@ -169,13 +171,16 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   ccc_mean <- t(sapply(ccc_norm, colMeans, na.rm=TRUE))
   rownames(ccc_mean) <- 0:(ncomp-1)
 
-  ccc_credint <- lapply(ccc_norm, function(x) {apply(x, 2, function(y) {
-    samp <- coda::as.mcmc(y)
-    if (sum(!is.nan(samp)) ==  1) {
-      c(NaN, NaN)
-    } else {
-      round(coda::HPDinterval(samp), 3)
-    }})})
+  ccc_credint <- lapply(ccc_norm, function(x) {
+    apply(x, 2, function(y) {
+      samp <- coda::as.mcmc(y)
+      if (sum(!is.nan(samp)) ==  1) {
+        c(NaN, NaN)
+      } else {
+        round(coda::HPDinterval(samp), 3)
+      }
+    })
+  })
   names(ccc_credint) <- 0:(ncomp-1)
 
   # Calculate mean and 95% credibility interval for each DP's
@@ -184,13 +189,16 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   cdc_mean <- t(sapply(cdc_norm, colMeans, na.rm=TRUE))
 
-  cdc_credint <- lapply(cdc_norm, function(x) {apply(x, 2, function(y) {
-    samp <- coda::as.mcmc(y)
-    if (sum(!is.nan(samp)) ==  1) {
-      c(NaN, NaN)
-    } else {
-      round(coda::HPDinterval(samp), 3)
-    }})})
+  cdc_credint <- lapply(cdc_norm, function(x) {
+    apply(x, 2, function(y) {
+      samp <- coda::as.mcmc(y)
+      if (sum(!is.nan(samp)) ==  1) {
+        c(NaN, NaN)
+      } else {
+        round(coda::HPDinterval(samp), 3)
+      }
+    })
+  })
 
 
   # proportion of data explained by extracted components?

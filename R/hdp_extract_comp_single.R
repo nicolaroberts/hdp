@@ -123,7 +123,7 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
   avg_prop_data <- rowMeans(sapply(ccc_3, colSums))/sum(ccc_3[[1]])
   cl_ordered <- names(avg_prop_data)[order(avg_prop_data, decreasing=T)]
   cl_below_prop <- which(cumsum(avg_prop_data[cl_ordered]) < prop.ex)
-  if (length(cl_below_prop) == 0 ) {
+  if (length(cl_below_prop) == 0) {
     use_clust <- cl_ordered
   } else {
     use_clust <- cl_ordered[1:(max(cl_below_prop)+1)]
@@ -195,13 +195,16 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
   ccc_mean <- t(sapply(ccc_norm, colMeans, na.rm=TRUE))
   rownames(ccc_mean) <- 0:(ncomp-1)
 
-  ccc_credint <- lapply(ccc_norm, function(x) {apply(x, 2, function(y) {
-    samp <- coda::as.mcmc(y)
-    if (sum(!is.nan(samp)) ==  1) {
-        c(NaN, NaN)
-    } else {
-        round(coda::HPDinterval(samp), 3)
-    }})})
+  ccc_credint <- lapply(ccc_norm, function(x) {
+    apply(x, 2, function(y) {
+      samp <- coda::as.mcmc(y)
+      if (sum(!is.nan(samp)) ==  1) {
+          c(NaN, NaN)
+      } else {
+          round(coda::HPDinterval(samp), 3)
+      }
+    })
+  })
   names(ccc_credint) <- 0:(ncomp-1)
 
   # Step (8)
@@ -211,13 +214,16 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
 
   cdc_mean <- t(sapply(cdc_norm, colMeans, na.rm=TRUE))
 
-  cdc_credint <- lapply(cdc_norm, function(x) {apply(x, 2, function(y) {
-    samp <- coda::as.mcmc(y)
-    if (sum(!is.nan(samp)) ==  1) {
-      c(NaN, NaN)
-    } else {
-      round(coda::HPDinterval(samp), 3)
-    }})})
+  cdc_credint <- lapply(cdc_norm, function(x) {
+    apply(x, 2, function(y) {
+      samp <- coda::as.mcmc(y)
+      if (sum(!is.nan(samp)) ==  1) {
+        c(NaN, NaN)
+      } else {
+        round(coda::HPDinterval(samp), 3)
+      }
+    })
+  })
 
   # add extracted components into chain hdpSampleChain slots
   chain@comp_settings <- list(prop.ex=prop.ex,
