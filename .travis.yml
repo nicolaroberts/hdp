@@ -7,7 +7,6 @@ bioc_packages:
   - BiocStyle
   - SomaticCancerAlterations
   - GenomicRanges
-  - BSgenome.Hsapiens.UCSC.hg19
   - Biostrings
 
 

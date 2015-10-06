@@ -29,7 +29,6 @@ BugReports: https://github.com/nicolaroberts/hdp/issues
 Suggests:
     testthat,
     SomaticCancerAlterations,
-    BSgenome.Hsapiens.UCSC.hg19,
     GenomicRanges,
     Biostrings,
     RColorBrewer,
