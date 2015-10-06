@@ -1,7 +1,7 @@
 ---
 title: "HDP for mutational signatures analysis"
 author: "Nicola Roberts"
-date: " `r Sys.Date()`"
+date: "October 6, 2015"
 output: 
   BiocStyle::html_document:
     toc: true
@@ -21,21 +21,23 @@ For the background to this document, see the other package vignette
 "General introduction to the hdp package."
 
 One specific application of the HDP is the analysis of somatic mutation data from
-cancer genome sequencing projects. In this setting, the input data consists of counts
-of mutation categories across a number of cancer samples. The HDP model returns a set
-of components representing the underlying mutational processes with their 
-characteristic distributions or 'signatures' over the set of possible mutation classes.
+cancer genome sequencing projects. In this setting, the input data consists of
+counts of mutation categories across a number of cancer samples. The HDP model
+returns a set of components representing the underlying mutational processes with
+their characteristic distributions or 'signatures' over the set of possible
+mutation classes.
 
-The ability to define hierarchies of sample-relatedness (via the tree of parent DP nodes
-in a customised HDP structure) allows mutational signatures to be inferred
-both across and within groups of patients, and groups of mutations within patients.
-Patient groups could be defined by cancer type or driver mutation status, while
-mutation groups *within* a patient could be defined by temporal or regional information, subclone status, etc.
+The ability to define hierarchies of sample-relatedness (via the tree of parent 
+DP nodes in a customised HDP structure) allows mutational signatures to be
+inferred both across and within groups of patients, and groups of mutations 
+within patients. Patient groups could be defined by cancer type or driver mutation
+status, while mutation groups *within* a patient could be defined by temporal or
+regional information, subclone status, etc.
 
 
 # Example: pan-cancer analysis of lung, ovarian and skin cancer
 
-## Tally somatic mutation classes
+## Tally somatic mutation categories
 
 The `r Biocexptpkg("SomaticCancerAlterations")` package contains several somatic alteration
 datasets for different cancer types. In this example, the number of somatic base
@@ -86,7 +88,7 @@ tail(mut_count[,1:5])
 In this example, the HDP is structured to have
 
 * one top grandparent DP drawing from the base distribution (ppindex 0) with 
-its own concentration parameter (cpindex 1)
+its own concentration parameter (cpindex 1),
 * three parent DPs (one per cancer type) drawing from the grandparent distribution 
 (ppindex 1) and sharing a new concentration parameter (cpindex 2),
 * 100 child DPs (one per lung cancer sample) drawing from the first parent (ppindex 2)
@@ -149,14 +151,26 @@ p2 <- lapply(chains(mut_example_multi), plot_numcluster, bty="L")
 p3 <- lapply(chains(mut_example_multi), plot_data_assigned, bty="L")
 ```
 
-## Extract components
+## Extract components (mutational signatures)
+
+The extracted components represent the underlying mutational processes
+giving rise to the observed catalogues of somatic mutation. Several processes
+are recognisable from [COSMIC](http://cancer.sanger.ac.uk/cosmic/signatures), 
+for example (1) is the UV radiation signature dominant in melanomas, (2) is the tobacco
+signature dominant in lung cancers, etc.  
+
+The `plot_dp_comp_exposure()` function plots the estimated proportion of mutations 
+within each sample derived from each signature. Note that by setting `incl_nonsig=FALSE`, 
+only those signatures with non-zero 95% credibility intervals for exposure in a 
+sample are included. As a result, a fraction of the sample's signature 
+exposure is left unexplained, as we can't have confidence that the other signatures 
+truly contribute to that sample. 
 
 ```{r extractmulti, fig.width=8, fig.height=5}
 mut_example_multi <- hdp_extract_components(mut_example_multi)
 mut_example_multi
 
 plot_comp_size(mut_example_multi, bty="L")
-
 
 bases <- c("A", "C", "G", "T")
 trinuc_context <- paste0(rep(rep(bases, times=4), each=6),
@@ -190,14 +204,14 @@ plot_dp_comp_exposure(mut_example_multi,
                       col=RColorBrewer::brewer.pal(12, "Set3"),
                       incl_nonsig=FALSE,
                       dpnames=c("Lung Adeno", "Ovarian", "Melanoma"))
-
 ```
 
 
-# Example: condition on previous dataset
+# Example: lung squamous cell carcinoma, conditioned on previous dataset 
 
-Load dataset of 100 lung squamous cell carcinomas, and condition on the final `hdpState` from the end of each previous chain by adding new nodes for the lung squamous data, and freezing the old nodes (except the top grandparent DP node). 
+## Tally somatic mutation categories
 
+Load dataset of mutation counts from 100 lung squamous cell carcinomas. 
 
 ```{r loadlusc}
 # # bit slow - don't run. Load pre-made copy. 
@@ -221,6 +235,13 @@ dim(lusc_count)
 head(lusc_count[,1:5])
 ```
 
+
+## Extend previous HDP structure, freeze old nodes, run posterior sampling chains
+
+Condition on the final `hdpState` from the end of each previous chain by adding 
+new nodes for the lung squamous data, freezing the old nodes (except the top 
+grandparent DP node), and running additional posterior sampling chains over the 
+new nodes. 
 
 ```{r addlusc}
 # # bit slow - don't run. Load pre-made copy. 
@@ -250,6 +271,9 @@ p1 <- lapply(chains(lusc_multi), plot_lik, bty="L")
 p2 <- lapply(chains(lusc_multi), plot_numcluster, bty="L")
 p3 <- lapply(chains(lusc_multi), plot_data_assigned, bty="L")
 ```
+
+
+## Extract components
 
 ```{r lusccomp, fig.width=8, fig.height=5}
 lusc_multi <- hdp_extract_components(lusc_multi)
