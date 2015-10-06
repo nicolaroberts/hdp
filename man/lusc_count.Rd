@@ -13,7 +13,7 @@ lusc_count
 Mutation count data from SomaticCancerAlterations package.
 Categories are the 96 base substitution types defined by local trinucleotide
 content, and the samples are 100 lung squamous cell carcinomas.
-Data was derived from exome-sequencing studies.
+Data is derived from TCGA exome-sequencing studies.
 }
 \keyword{datasets}
 

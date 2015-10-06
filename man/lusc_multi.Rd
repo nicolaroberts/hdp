@@ -9,12 +9,14 @@
 lusc_multi
 }
 \description{
-Four independent HDP posterior sampling chains for lung squamous cell carcinoma
-data, conditioned on previous HDP output for three other cancer types:
-lung adenocarcinoma, ovarian cancer, and melanoma.
+Four independent HDP sampling chains for lung squamous cell carcinoma
+data, conditioned on previous HDP output (mut_example_multi) for three other
+cancer types: lung adenocarcinoma, ovarian cancer, and melanoma.
 Categories are the 96 base substitution types defined by local trinucleotide
 content.
-Nodes 2:304 are frozen (old data from other cancer types), node 305 is the parent node for the LUSC samples, and nodes 306:405 hold the data for the 100 new LUSC samples.
+Nodes 2:304 are frozen (old data from other cancer types),
+node 305 is the parent node for the LUSC samples,
+and nodes 306:405 hold the data for the 100 new LUSC samples.
 }
 \keyword{datasets}
 

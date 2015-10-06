@@ -13,11 +13,11 @@ HDP posterior sampling chain with data from SomaticCancerAlterations package.
 Categories are the 96 base substitution types defined by local trinucleotide
 content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
 carcinomas, and 100 skin cutaneous melanomas.
-Data was derived from exome-sequencing studies.
+Data is derived from TCGA exome-sequencing studies.
 Each sample was assigned to a unique child DP node, with one parent DP node per
 cancer type, and one grandparent DP node at the top level.
-Chain initialised with 10 clusters, then run through 3000 burn-in iterations before
-collecting 50 posterior samples with 50 iterations between each.
+Chain initialised with 10 clusters, then run through 3000 burn-in iterations
+before collecting 50 posterior samples with 50 iterations between each.
 }
 \keyword{datasets}
 
