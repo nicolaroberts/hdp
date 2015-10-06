@@ -12,7 +12,7 @@ hdp_getstate <- function(hdp){
   hdpstate$classnd  <- t(sapply(hdp$dp, function(x) x$classnd))
   hdpstate$beta     <- t(sapply(hdp$dp, function(x){
     ans <- x$beta
-    length(ans) <- hdpstate$numclass
+    length(ans) <- hdpstate$numclass + 1
     ans[is.na(ans)] <- 0
     return(ans)
   } ))
