@@ -22,7 +22,7 @@ If components have been previously calculated for this sampling chain, they
 will be removed and must be recalculated.
 }
 \examples{
-chain_adj <- cull_posterior_samples(tcga_example_chain, 20)
+chain_adj <- cull_posterior_samples(mut_example_chain, 20)
 plot_lik(chain_adj)
 plot_numcluster(chain_adj)
 plot_data_assigned(chain_adj)

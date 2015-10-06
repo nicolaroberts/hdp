@@ -4,12 +4,17 @@
 \alias{plot_numcluster}
 \title{Plot number of raw clusters in each posterior sample from the chain}
 \usage{
-plot_numcluster(chain, col = "blue", ...)
+plot_numcluster(chain, col = "blue", xlab = "Sample",
+  ylab = "Number of raw clusters", ...)
 }
 \arguments{
 \item{chain}{A hdpSampleChain object}
 
 \item{col}{Plot colour (default blue)}
+
+\item{xlab}{Horizontal axis label}
+
+\item{ylab}{Vertical axis label}
 
 \item{...}{Other arguments to plot}
 }
@@ -17,10 +22,7 @@ plot_numcluster(chain, col = "blue", ...)
 Plot number of raw clusters in each posterior sample from the chain
 }
 \examples{
-plot_numcluster(tcga_example_chain, bty="L")
-
-par(mfrow=c(3,2))
-lapply(chains(tcga_example_multi), plot_numcluster, bty="L")
+plot_numcluster(mut_example_chain, bty="L")
 }
 \seealso{
 \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},

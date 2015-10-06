@@ -36,22 +36,15 @@ relative contribution (multiplicative)}
 Barplot of the mean distribution over data categories for each component
 }
 \examples{
-tcga_example_chain <- hdp_extract_components(tcga_example_chain)
-
+mut_example_multi <- hdp_extract_components(mut_example_multi)
 bases <- c("A", "C", "G", "T")
 trinuc_context <- paste0(rep(rep(bases, times=4), each=6),
                          rep(c("C", "T"), each=48),
                          rep(bases, times=24))
 group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
                            each=16))
-plot_comp_distn(tcga_example_chain, cat_names=trinuc_context,
+plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
                 col_nonsig="grey80", show_group_labels=TRUE)
-
-# not run (slow):
-# tcga_example_multi <- hdp_extract_components(tcga_example_multi)
-# plot_comp_distn(tcga_example_multi, cat_names=trinuc_context,
-#                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
-#                 col_nonsig="grey80", show_group_labels=TRUE)
 }
 

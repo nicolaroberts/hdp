@@ -5,7 +5,7 @@
 \title{Plot likelihood of HDP posterior sampling chain.}
 \usage{
 plot_lik(chain, start = 1, end = length(lik(chain)), col_lik = "blue",
-  col_burn = "red", ...)
+  col_burn = "red", xlab = "Iteration", ylab = "Likelihood", ...)
 }
 \arguments{
 \item{chain}{A hdpSampleChain object}
@@ -18,16 +18,17 @@ plot_lik(chain, start = 1, end = length(lik(chain)), col_lik = "blue",
 
 \item{col_burn}{Plot colour of burnin (default red)}
 
+\item{xlab}{Horizontal axis label}
+
+\item{ylab}{Vertical axis label}
+
 \item{...}{Other arguments to plot}
 }
 \description{
 Plot likelihood of HDP posterior sampling chain.
 }
 \examples{
-plot_lik(tcga_example_chain, bty="L")
-
-par(mfrow=c(3,2))
-lapply(chains(tcga_example_multi), plot_lik, bty="L")
+plot_lik(mut_example_chain, bty="L")
 }
 \seealso{
 \code{\link{hdpSampleChain-class}}, \code{\link{plot_numcluster}},

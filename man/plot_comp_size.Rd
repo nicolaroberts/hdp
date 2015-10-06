@@ -5,7 +5,8 @@
 \title{Plot number of data items assigned to each component for each posterior sample.}
 \usage{
 plot_comp_size(hdpsample, legend = TRUE, col_a = "hotpink",
-  col_b = "skyblue3", ...)
+  col_b = "skyblue3", xlab = "Component", ylab = "Number of data items",
+  ...)
 }
 \arguments{
 \item{hdpsample}{A hdpSampleChain or hdpSampleMulti object including
@@ -17,17 +18,17 @@ output from \code{\link{hdp_extract_components}}}
 
 \item{col_b}{Color ramp side for late posterior samples (if hdpSampleChain) or last chain (if hdpSampleMulti)}
 
+\item{xlab}{Horizontal axis label}
+
+\item{ylab}{Vertical axis label}
+
 \item{...}{Other arguments to plot}
 }
 \description{
 Plot number of data items assigned to each component for each posterior sample.
 }
 \examples{
-tcga_example_chain <- hdp_extract_components(tcga_example_chain)
-plot_comp_size(tcga_example_chain, bty="L")
-
-# not run (slow):
-# tcga_example_multi <- hdp_extract_components(tcga_example_multi)
-# plot_comp_size(tcga_example_multi, bty="L")
+mut_example_multi <- hdp_extract_components(mut_example_multi)
+plot_comp_size(mut_example_multi, bty="L")
 }
 

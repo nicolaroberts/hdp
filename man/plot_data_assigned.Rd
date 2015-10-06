@@ -5,7 +5,8 @@
 \title{Plot proportion of data items assigned vs number of clusters}
 \usage{
 plot_data_assigned(chain, legend = TRUE, col_early = "hotpink",
-  col_late = "skyblue3", ...)
+  col_late = "skyblue3", xlab = "Number of raw clusters",
+  ylab = "Cumulative prop. of data assigned", ...)
 }
 \arguments{
 \item{chain}{A hdpSampleChain object}
@@ -15,6 +16,10 @@ plot_data_assigned(chain, legend = TRUE, col_early = "hotpink",
 \item{col_early}{Color ramp side for early posterior samples}
 
 \item{col_late}{Color ramp side for late posterior samples}
+
+\item{xlab}{Horizontal axis label}
+
+\item{ylab}{Vertical axis label}
 
 \item{...}{Other arguments to plot}
 }
@@ -28,10 +33,7 @@ Each posterior sample is plotted separately, using a colour spectrum ranging fro
 is plotted in black.
 }
 \examples{
-plot_data_assigned(tcga_example_chain, bty="L")
-
-par(mfrow=c(3,2))
-lapply(chains(tcga_example_multi), plot_data_assigned, bty="L")
+plot_data_assigned(mut_example_chain, bty="L")
 }
 \seealso{
 \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},

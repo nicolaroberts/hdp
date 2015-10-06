@@ -37,6 +37,7 @@ Extract major components from the raw clusters
 \item \code{hdpSampleMulti}: 
 }}
 \examples{
-hdp_extract_components(tcga_example_chain)
+hdp_extract_components(mut_example_chain)
+hdp_extract_components(mut_example_multi)
 }
 
