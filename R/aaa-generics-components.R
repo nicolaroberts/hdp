@@ -7,10 +7,12 @@
 #'  will be re-calculated. Only used for hdpSampleMulti.
 #' @return A hdpSampleChain or hdpSampleMulti object updated with component information
 #' @aliases hdp_extract_components
+#' @import clue
 #' @include hdp_extract_comp_single.R hdp_extract_comp_multi.R
 #' @export
 #' @examples
-#' hdp_extract_components(tcga_example_chain)
+#' hdp_extract_components(mut_example_chain)
+#' hdp_extract_components(mut_example_multi)
 #'
 setGeneric("hdp_extract_components",
            function(x, cos.merge=0.9, prop.ex=0.97, redo=TRUE)
