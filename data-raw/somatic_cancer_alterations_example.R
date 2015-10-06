@@ -83,3 +83,50 @@ mut_example_multi <- hdp_multi_chain(chlist)
 
 # save to data/
 devtools::use_data(mut_example_multi, overwrite = TRUE)
+
+
+
+## lung squamous cell carcinoma, condition on previous chains
+
+
+data("lusc_tcga", package="SomaticCancerAlterations")
+
+lusc <- lusc_tcga[which(lusc_tcga$Variant_Type == "SNP")]
+lusc <- lusc[which(lusc$Patient_ID %in% levels(lusc$Patient_ID)[1:101])]
+mcols(lusc) <- data.frame(sampleID=paste('lusc', lusc$Patient_ID, sep='_'),
+                          ref=lusc$Reference_Allele,
+                          alt=lusc$Tumor_Seq_Allele2)
+
+remove(lusc_tcga)
+
+# tally mutation counts in 96 base substitution classes defined by trinucleotide context
+lusc_count <- nrmisc::tally_mutations_96(lusc)
+
+# remove sample with the largest burden (very different to others)
+lusc_count <- lusc_count[-which.max(rowSums(lusc_count)),]
+head(lusc_count[,1:5])
+
+# save to data/
+devtools::use_data(lusc_count, overwrite = TRUE)
+
+# run four chains off end of previous
+hdpStatelist <- lapply(chains(mut_example_multi), final_hdpState)
+chlist <- vector("list", 4)
+
+for (i in 1:4){
+  hdp <- hdpStatelist[[i]]
+  hdp <- hdp_addconparam(hdp, 1, 1)
+  hdp <- hdp_adddp(hdp, 101,
+                   ppindex=c(1, rep(305, 100)),
+                   cpindex=c(2, rep(6, 100)))
+  hdp <- hdp_setdata(hdp, 306:405, lusc_count)
+  hdp <- dp_freeze(hdp, 2:304)
+  hdp <- dp_activate(hdp, 305:405, initcc=base(hdp)@numclass, seed=i*1e5)
+
+  chlist[[i]] <- hdp_posterior(hdp, burnin=1500, n=50,
+                               space=50, cpiter=3, seed=i*1e6)
+}
+
+lusc_multi <- hdp_multi_chain(chlist)
+# save to data/
+devtools::use_data(lusc_multi, overwrite = TRUE)

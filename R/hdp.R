@@ -19,9 +19,23 @@ NULL
 #' carcinomas, and 100 skin cutaneous melanomas.
 #' Data was derived from exome-sequencing studies.
 #'
-#' @format A matrix of mutation counts with 925 rows (one per cancer sample)
+#' @format A matrix of mutation counts with 300 rows (one per cancer sample)
 #'  and 96 columns (one per mutation category)
 "mut_count"
+
+
+#' Lung squamous cell carcinoma mutation data
+#'
+#' Mutation count data from SomaticCancerAlterations package.
+#' Categories are the 96 base substitution types defined by local trinucleotide
+#' content, and the samples are 100 lung squamous cell carcinomas.
+#' Data was derived from exome-sequencing studies.
+#'
+#' @format A matrix of mutation counts with 100 rows (one per cancer sample)
+#'  and 96 columns (one per mutation category)
+"lusc_count"
+
+
 
 #' Posterior sampling chain with cancer mutation data
 #'
@@ -52,3 +66,16 @@ NULL
 #'
 #' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
 "mut_example_multi"
+
+
+#' Posterior sampling chains for LUSC data, conditional on previous HDP
+#'
+#' Four independent HDP posterior sampling chains for lung squamous cell carcinoma
+#' data, conditioned on previous HDP output for three other cancer types:
+#' lung adenocarcinoma, ovarian cancer, and melanoma.
+#' Categories are the 96 base substitution types defined by local trinucleotide
+#' content.
+#' Nodes 2:304 are frozen (old data from other cancer types), node 305 is the parent node for the LUSC samples, and nodes 306:405 hold the data for the 100 new LUSC samples.
+#'
+#' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
+"lusc_multi"
