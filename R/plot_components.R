@@ -5,19 +5,17 @@
 #' @param legend Logical - should a legend be included? (default TRUE)
 #' @param col_a Color ramp side for early posterior samples (if hdpSampleChain) or first chain (if hdpSampleMulti)
 #' @param col_b Color ramp side for late posterior samples (if hdpSampleChain) or last chain (if hdpSampleMulti)
+#' @param xlab Horizontal axis label
+#' @param ylab Vertical axis label
 #' @param ... Other arguments to plot
 #' @export
 #' @examples
-#' tcga_example_chain <- hdp_extract_components(tcga_example_chain)
-#' plot_comp_size(tcga_example_chain, bty="L")
+#' mut_example_multi <- hdp_extract_components(mut_example_multi)
+#' plot_comp_size(mut_example_multi, bty="L")
 #'
-#' # not run (slow):
-#' # tcga_example_multi <- hdp_extract_components(tcga_example_multi)
-#' # plot_comp_size(tcga_example_multi, bty="L")
-#'
-
 plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
-                           col_b="skyblue3", ...){
+                           col_b="skyblue3", xlab="Component",
+                           ylab="Number of data items", ...){
 
   # input checks
   if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
@@ -46,8 +44,8 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
     legtext <- c("First chain", "Last chain")
   }
 
-  plot(x=jitter(rep(0:(nrow(sums)-1), ncol(sums))), xlab="Component",
-       y=as.vector(sums), pch=1, col=mycols, ylab="Number of data items", ...)
+  plot(x=jitter(rep(0:(nrow(sums)-1), ncol(sums))), xlab=xlab,
+       y=as.vector(sums), pch=1, col=mycols, ylab=ylab, ...)
 
   if (legend) {
     legend("topright", col=c(col_a, col_b), pch=1, legend=legtext, bty="n")
@@ -74,23 +72,17 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
 #'  relative contribution (multiplicative)
 #' @export
 #' @examples
-#' tcga_example_chain <- hdp_extract_components(tcga_example_chain)
-#'
+#' mut_example_multi <- hdp_extract_components(mut_example_multi)
 #' bases <- c("A", "C", "G", "T")
 #' trinuc_context <- paste0(rep(rep(bases, times=4), each=6),
 #'                          rep(c("C", "T"), each=48),
 #'                          rep(bases, times=24))
 #' group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
 #'                            each=16))
-#' plot_comp_distn(tcga_example_chain, cat_names=trinuc_context,
+#' plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
 #'                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
 #'                 col_nonsig="grey80", show_group_labels=TRUE)
 #'
-#' # not run (slow):
-#' # tcga_example_multi <- hdp_extract_components(tcga_example_multi)
-#' # plot_comp_distn(tcga_example_multi, cat_names=trinuc_context,
-#' #                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
-#' #                 col_nonsig="grey80", show_group_labels=TRUE)
 
 plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
                             grouping=NULL, col="grey70", col_nonsig=NULL,
@@ -226,16 +218,12 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 #'  be included (per DP)? (Default TRUE)
 #' @export
 #' @examples
-#' tcga_example_chain <- hdp_extract_components(tcga_example_chain)
-#' plot_dp_comp_exposure(tcga_example_chain, 4:30,
-#'                       RColorBrewer::brewer.pal(9, "Set3"))
-#' plot_dp_comp_exposure(tcga_example_chain, 4:30,
-#'                       RColorBrewer::brewer.pal(9, "Set3"),
+#' mut_example_multi <- hdp_extract_components(mut_example_multi)
+#' plot_dp_comp_exposure(mut_example_multi, 5:30,
+#'                       RColorBrewer::brewer.pal(12, "Set3"))
+#' plot_dp_comp_exposure(mut_example_multi, 5:30,
+#'                       RColorBrewer::brewer.pal(12, "Set3"),
 #'                       incl_numdata_plot=FALSE, incl_nonsig=FALSE)
-#' # not run (slow):
-#' # tcga_example_multi <- hdp_extract_components(tcga_example_multi)
-#' # plot_dp_comp_exposure(tcga_example_multi, 4:30,
-#' #                       RColorBrewer::brewer.pal(9, "Set3"))
 
 plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
                                 main_text=NULL, incl_numdata_plot=TRUE,
