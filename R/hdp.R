@@ -11,33 +11,44 @@ NULL
 #' @format A numeric count matrix with 10 rows and 6 columns
 "example_data_hdp"
 
+#' Cancer mutation data
+#'
+#' Mutation count data from SomaticCancerAlterations package.
+#' Categories are the 96 base substitution types defined by local trinucleotide
+#' content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
+#' carcinomas, and 100 skin cutaneous melanomas.
+#' Data was derived from exome-sequencing studies.
+#'
+#' @format A matrix of mutation counts with 925 rows (one per cancer sample)
+#'  and 96 columns (one per mutation category)
+"mut_count"
 
-#' Posterior sampling chain from TCGA somatic mutation data
+#' Posterior sampling chain with cancer mutation data
 #'
 #' HDP posterior sampling chain with data from SomaticCancerAlterations package.
 #' Categories are the 96 base substitution types defined by local trinucleotide
-#' content, and the samples include 291 glioblastoma
-#' multiforme (gbm) samples, and 293 kidney chromophobe cancer (kirc) samples.
+#' content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
+#' carcinomas, and 100 skin cutaneous melanomas.
 #' Data was derived from exome-sequencing studies.
-#' Each sample was assigned to a unique child DP node, with one parent DP node for
-#' gbm, one parent node for kirc samples, and one grandparent DP node at the top level.
-#' Chain initialised with 8 clusters, then run through 3000 burn-in iterations before
+#' Each sample was assigned to a unique child DP node, with one parent DP node per
+#' cancer type, and one grandparent DP node at the top level.
+#' Chain initialised with 10 clusters, then run through 3000 burn-in iterations before
 #' collecting 50 posterior samples with 50 iterations between each.
 #'
 #' @format A hdpSampleChain object with 50 posterior samples
-"tcga_example_chain"
+"mut_example_chain"
 
-#' Multiple posterior sampling chains with TCGA somatic mutation data
+#' Multiple posterior sampling chains with cancer mutation data
 #'
-#' Five independent HDP posterior sampling chains with data from SomaticCancerAlterations package.
+#' Four independent HDP posterior sampling chains with data from SomaticCancerAlterations package.
 #' Categories are the 96 base substitution types defined by local trinucleotide
-#' content, and the samples include 291 glioblastoma
-#' multiforme (gbm) samples, and 293 kidney chromophobe cancer (kirc) samples.
+#' content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
+#' carcinomas, and 100 skin cutaneous melanomas.
 #' Data was derived from exome-sequencing studies.
-#' Each sample was assigned to a unique child DP node, with one parent DP node for
-#' gbm, one parent node for kirc samples, and one grandparent DP node at the top level.
-#' Each of the five chains were initialised with 8 clusters, then run through 3000 burn-in iterations before
+#' Each sample was assigned to a unique child DP node, with one parent DP node per
+#' cancer type, and one grandparent DP node at the top level.
+#' Each chain initialised with 10 clusters, then run through 3000 burn-in iterations before
 #' collecting 50 posterior samples with 50 iterations between each.
 #'
-#' @format A hdpSampleMulti object with 250 posterior samples, 50 from each chain
-"tcga_example_multi"
+#' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
+"mut_example_multi"
