@@ -1,0 +1,285 @@
+---
+title: "HDP for mutational signatures analysis"
+author: "Nicola Roberts"
+date: " `r Sys.Date()`"
+output: 
+  BiocStyle::html_document:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{HDP for mutational signatures analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r style, echo = FALSE, results = 'asis'}
+BiocStyle::markdown()
+
+knitr::opts_chunk$set(fig.width=6, fig.height=5)
+```
+
+For the background to this document, see the other package vignette
+"General introduction to the hdp package."
+
+One specific application of the HDP is the analysis of somatic mutation data from
+cancer genome sequencing projects. In this setting, the input data consists of counts
+of mutation categories across a number of cancer samples. The HDP model returns a set
+of components representing the underlying mutational processes with their 
+characteristic distributions or 'signatures' over the set of possible mutation classes.
+
+The ability to define hierarchies of sample-relatedness (via the tree of parent DP nodes
+in a customised HDP structure) allows mutational signatures to be inferred
+both across and within groups of patients, and groups of mutations within patients.
+Patient groups could be defined by cancer type or driver mutation status, while
+mutation groups *within* a patient could be defined by temporal or regional information, subclone status, etc.
+
+
+# Example: pan-cancer analysis of lung, ovarian and skin cancer
+
+## Tally somatic mutation classes
+
+The `r Biocexptpkg("SomaticCancerAlterations")` package contains several somatic alteration
+datasets for different cancer types. In this example, the number of somatic base
+substitution mutations in each of the 96 categories defined by local trinucleotide context
+are tallied across 100 lung cancers, 100 ovarian cancers, and 100 melanomas. 
+
+```{r loaddata, message=FALSE}
+library(hdp)
+library(GenomicRanges)
+
+# Lung adenocarcinoma
+data(luad_tcga, package="SomaticCancerAlterations")
+
+# Ovarian serous cystadenocarcinoma
+data(ov_tcga, package="SomaticCancerAlterations")
+
+# Skin cutaneous melanoma
+data(skcm_tcga, package="SomaticCancerAlterations")
+
+# only keep SNP type, add cancer type to sample name, and only keep
+# necessary metadata. Only keep 100 samples. Then concatenate and sort.
+for (cancer_name in c("luad", "ov", "skcm")){
+  raw <- get(paste0(cancer_name, "_tcga"))
+  snv <- raw[which(raw$Variant_Type == "SNP")]
+  snv <- snv[which(snv$Patient_ID %in% levels(snv$Patient_ID)[1:100])]
+  mcols(snv) <- data.frame(sampleID=paste(cancer_name, snv$Patient_ID, sep='_'),
+                           ref=snv$Reference_Allele,
+                           alt=snv$Tumor_Seq_Allele2)
+  assign(cancer_name, snv)
+}
+variants <- sort(c(luad, ov, skcm))
+remove(cancer_name, luad, luad_tcga, ov, ov_tcga, skcm, skcm_tcga, raw, snv)
+
+variants
+
+
+# tally mutation counts in 96 base substitution classes defined by trinucleotide context
+# bit slow - don't run. Load pre-made copy. 
+# mut_count <- nrmisc::tally_mutations_96(variants)
+dim(mut_count)
+head(mut_count[,1:5])
+tail(mut_count[,1:5])
+```
+
+
+## Initialise HDP structure
+
+In this example, the HDP is structured to have
+
+* one top grandparent DP drawing from the base distribution (ppindex 0) with 
+its own concentration parameter (cpindex 1)
+* three parent DPs (one per cancer type) drawing from the grandparent distribution 
+(ppindex 1) and sharing a new concentration parameter (cpindex 2),
+* 100 child DPs (one per lung cancer sample) drawing from the first parent (ppindex 2)
+and sharing a new concentration parameter (cpindex 3),
+* 100 child DPs (one per ovarian cancer sample) drawing from the second parent (ppindex 3)
+and sharing a new concentration parameter (cpindex 4), and
+* 100 child DPs (one per melanoma sample) drawing from the third parent (index 4)
+and sharing a new concentration parameter (cpindex 5).
+
+The base distribution is a uniform Dirichlet with pseudocount 1 in each of the 96
+possible mutation categories. Each concentration parameter is drawn from a gamma prior
+with hyperparameters rate=1, shape=1. 
+
+
+```{r inithdp}
+# initialise HDP
+ppindex <- c(0, rep(1, 3), rep(2:4, each=100))
+cpindex <- c(1, rep(2, 3), rep(3:5, each=100))
+hdp <- hdp_init(ppindex, 
+                cpindex, 
+                hh=rep(1, 96), 
+                alphaa=rep(1, 5), 
+                alphab=rep(1, 5))
+
+# add data
+hdp <- hdp_setdata(hdp, 5:numdp(hdp), mut_count)
+
+# activate DPs, 10 initial components
+hdp <- dp_activate(hdp, 1:numdp(hdp), 10, seed=1)
+
+hdp
+
+```
+
+## Run multiple posterior sampling chains
+
+Run four independent posterior sampling chains with 4000 burn-in iterations,
+then collect 50 samples off each chain with 50 iterations between each. 
+
+```{r postsamp}
+# Run four independent posterior sampling chains
+# Takes ~15 minutes - don't run. Load pre-made copy.
+# chlist <- vector("list", 4)
+# 
+# for (i in 1:4){
+#   chlist[[i]] <- hdp_posterior(hdp, 
+#                                burnin=4000,
+#                                n=50,
+#                                space=50,
+#                                cpiter=3, 
+#                                seed=i*1e4)
+# }
+# 
+# mut_example_multi <- hdp_multi_chain(chlist)
+mut_example_multi
+
+par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
+p1 <- lapply(chains(mut_example_multi), plot_lik, bty="L", start=500)
+p2 <- lapply(chains(mut_example_multi), plot_numcluster, bty="L")
+p3 <- lapply(chains(mut_example_multi), plot_data_assigned, bty="L")
+```
+
+## Extract components
+
+```{r extractmulti, fig.width=8, fig.height=5}
+mut_example_multi <- hdp_extract_components(mut_example_multi)
+mut_example_multi
+
+plot_comp_size(mut_example_multi, bty="L")
+
+
+bases <- c("A", "C", "G", "T")
+trinuc_context <- paste0(rep(rep(bases, times=4), each=6),
+                         rep(c("C", "T"), each=48),
+                         rep(bases, times=24))
+group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
+                           each=16))
+
+plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
+                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set1"),
+                 col_nonsig="grey80", show_group_labels=TRUE)
+
+
+plot_dp_comp_exposure(mut_example_multi, main_text="Lung adenocarcinoma",
+                      dpindices=4+(1:100), 
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE)
+
+plot_dp_comp_exposure(mut_example_multi, main_text="Ovarian cancer",
+                      dpindices=104+(1:100), 
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE)
+
+plot_dp_comp_exposure(mut_example_multi, main_text="Melanoma",
+                      dpindices=204+(1:100), 
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE)
+
+plot_dp_comp_exposure(mut_example_multi,
+                      dpindices=2:4, incl_numdata_plot=FALSE,
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE,
+                      dpnames=c("Lung Adeno", "Ovarian", "Melanoma"))
+
+```
+
+
+# Example: condition on previous dataset
+
+Load dataset of 100 lung squamous cell carcinomas, and condition on the final `hdpState` from the end of each previous chain by adding new nodes for the lung squamous data, and freezing the old nodes (except the top grandparent DP node). 
+
+
+```{r loadlusc}
+# # bit slow - don't run. Load pre-made copy. 
+
+# data("lusc_tcga", package="SomaticCancerAlterations")
+# 
+# lusc <- lusc_tcga[which(lusc_tcga$Variant_Type == "SNP")]
+# lusc <- lusc[which(lusc$Patient_ID %in% levels(lusc$Patient_ID)[1:101])]
+# mcols(lusc) <- data.frame(sampleID=paste('lusc', lusc$Patient_ID, sep='_'),
+#                           ref=lusc$Reference_Allele,
+#                           alt=lusc$Tumor_Seq_Allele2)
+# 
+# remove(lusc_tcga)
+
+# # tally mutation counts in 96 base substitution classes defined by trinucleotide context
+
+# lusc_count <- nrmisc::tally_mutations_96(lusc)
+# # remove sample with the largest burden (very different to others)
+# lusc_count <- lusc_count[-which.max(rowSums(lusc_count)),]
+dim(lusc_count)
+head(lusc_count[,1:5])
+```
+
+
+```{r addlusc}
+# # bit slow - don't run. Load pre-made copy. 
+# 
+# hdpStatelist <- lapply(chains(mut_example_multi), final_hdpState)
+# chlist <- vector("list", 4)
+# 
+# for (i in 1:4){
+#   hdp <- hdpStatelist[[i]]
+#   hdp <- hdp_addconparam(hdp, 1, 1)
+#   hdp <- hdp_adddp(hdp, 101, 
+#                    ppindex=c(1, rep(305, 100)),
+#                    cpindex=c(2, rep(6, 100)))
+#   hdp <- hdp_setdata(hdp, 306:405, lusc_count)
+#   hdp <- dp_freeze(hdp, 2:304)
+#   hdp <- dp_activate(hdp, 305:405, initcc=base(hdp)@numclass, seed=i*1e5)
+# 
+#   chlist[[i]] <- hdp_posterior(hdp, burnin=1500, n=50, 
+#                                space=50, cpiter=3, seed=i*1e6)
+# }
+# 
+# lusc_multi <- hdp_multi_chain(chlist)
+lusc_multi
+
+par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
+p1 <- lapply(chains(lusc_multi), plot_lik, bty="L")
+p2 <- lapply(chains(lusc_multi), plot_numcluster, bty="L")
+p3 <- lapply(chains(lusc_multi), plot_data_assigned, bty="L")
+```
+
+```{r lusccomp, fig.width=8, fig.height=5}
+lusc_multi <- hdp_extract_components(lusc_multi)
+lusc_multi
+
+plot_comp_size(lusc_multi, bty="L")
+
+plot_comp_distn(lusc_multi, cat_names=trinuc_context,
+                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set1"),
+                 col_nonsig="grey80", show_group_labels=TRUE)
+
+
+plot_dp_comp_exposure(lusc_multi, main_text="Lung squamous",
+                      dpindices=306:405, 
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE)
+
+plot_dp_comp_exposure(lusc_multi,
+                      dpindices=c(305, 2:4), incl_numdata_plot=FALSE,
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE,
+                      dpnames=c("Lung Squamous", "Lung Adeno", 
+                                "Ovarian", "Melanoma"))
+
+```
+
+# Session info
+
+Session information for the system on which this document was compiled:
+
+```{r sessionInfo, echo=TRUE}
+devtools::session_info()
+```
