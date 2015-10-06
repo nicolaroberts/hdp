@@ -5,18 +5,19 @@
 #' @param end The final iteration to plot to (default is end of chain)
 #' @param col_lik Plot colour of likelihood (default blue)
 #' @param col_burn Plot colour of burnin (default red)
+#' @param xlab Horizontal axis label
+#' @param ylab Vertical axis label
 #' @param ... Other arguments to plot
 #' @seealso \code{\link{hdpSampleChain-class}}, \code{\link{plot_numcluster}},
 #'  \code{\link{plot_data_assigned}}
 #' @export
 #' @examples
-#' plot_lik(tcga_example_chain, bty="L")
+#' plot_lik(mut_example_chain, bty="L")
 #'
-#' par(mfrow=c(3,2))
-#' lapply(chains(tcga_example_multi), plot_lik, bty="L")
 
 plot_lik <- function(chain, start=1, end=length(lik(chain)),
-                     col_lik="blue", col_burn="red", ...){
+                     col_lik="blue", col_burn="red",
+                     xlab="Iteration", ylab="Likelihood", ...){
 
   # input checks
   if (class(chain) != "hdpSampleChain") {
@@ -32,7 +33,7 @@ plot_lik <- function(chain, start=1, end=length(lik(chain)),
   # plot
   lik <- lik(chain)[start:end]
   plot(seq(start, end), lik, type="l", col=col_lik,
-       xlab="Iteration", ylab="Likelihood", ...)
+       xlab=xlab, ylab=ylab, ...)
   abline(v=hdp_settings(chain)$burnin, col=col_burn, lty=2)
 }
 
@@ -41,17 +42,17 @@ plot_lik <- function(chain, start=1, end=length(lik(chain)),
 #'
 #' @param chain A hdpSampleChain object
 #' @param col Plot colour (default blue)
+#' @param xlab Horizontal axis label
+#' @param ylab Vertical axis label
 #' @param ... Other arguments to plot
 #' @seealso \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},
 #'  \code{\link{plot_data_assigned}}
 #' @export
 #' @examples
-#' plot_numcluster(tcga_example_chain, bty="L")
+#' plot_numcluster(mut_example_chain, bty="L")
 #'
-#' par(mfrow=c(3,2))
-#' lapply(chains(tcga_example_multi), plot_numcluster, bty="L")
-
-plot_numcluster <- function(chain, col="blue", ...){
+plot_numcluster <- function(chain, col="blue", xlab="Sample",
+                            ylab="Number of raw clusters", ...){
 
   # input checks
   if (class(chain) != "hdpSampleChain") {
@@ -61,8 +62,7 @@ plot_numcluster <- function(chain, col="blue", ...){
 
   # plot
   numcluster <- numcluster(chain)
-  plot(numcluster, type="l", col=col,
-       xlab="Sample", ylab="Number of raw clusters", ...)
+  plot(numcluster, type="l", col=col, xlab=xlab, ylab=ylab, ...)
 }
 
 
@@ -80,18 +80,20 @@ plot_numcluster <- function(chain, col="blue", ...){
 #' @param legend Logical - should a legend be included? (default TRUE)
 #' @param col_early Color ramp side for early posterior samples
 #' @param col_late Color ramp side for late posterior samples
+#' @param xlab Horizontal axis label
+#' @param ylab Vertical axis label
 #' @param ... Other arguments to plot
 #' @seealso \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},
 #'  \code{\link{plot_numcluster}}
 #' @export
 #' @examples
-#' plot_data_assigned(tcga_example_chain, bty="L")
+#' plot_data_assigned(mut_example_chain, bty="L")
 #'
-#' par(mfrow=c(3,2))
-#' lapply(chains(tcga_example_multi), plot_data_assigned, bty="L")
 
 plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
-                               col_late="skyblue3", ...){
+                               col_late="skyblue3",
+                               xlab="Number of raw clusters",
+                               ylab="Cumulative prop. of data assigned", ...){
 
   # input checks
   if (class(chain) != "hdpSampleChain") {
@@ -126,8 +128,7 @@ plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
   cols <- colorRampPalette(colors=c(col_early, col_late))
 
   matplot(pda[1:xmax,], type="l", col=cols(n), xlim=c(0.95, xmax),
-          xlab="Number of raw clusters",
-          ylab="Cumulative prop. of data assigned", ...)
+          xlab=xlab, ylab=ylab, ...)
 
   if (legend) {
     legend("bottomright", col=c(col_early, col_late, "black"), lty=1, lwd=2,
