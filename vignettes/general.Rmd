@@ -302,9 +302,9 @@ p3 <- lapply(chains(multi), plot_data_assigned, bty="L")
 
 
 Constituent chains can be dropped from a `hdpSampleMulti` object (e.g. 
-`chains(multi) <- chains(multi)[-2]`) or have their burn-in time extended
+`multi@chains <- chains(multi)[-2]`) or have their burn-in time extended
 by dropping some initial samples 
-(e.g. `chains(multi)[2] <- cull_posterior_samples(chains(multi)[2], 20)`). 
+(e.g. `multi@chains[[2]] <- cull_posterior_samples(chains(multi)[[2]], 20)`). 
 
 
 ## Extract components from hdpSampleMulti
