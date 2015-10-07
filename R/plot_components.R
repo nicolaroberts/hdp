@@ -313,7 +313,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
     par(mfrow=c(2, 1), mar=c(1, 4, 2, 0.5), oma=c(1.5, 1.5, 1, 1), cex.axis=0.7)
 
     barplot(numdata[dp_order], main=main_text, col="gray", space=0, border=NA,
-            names.arg=dpnames, ylab="Number of data items", las=2,
+            names.arg='', ylab="Number of data items", las=2,
             cex.names=0.6,
             legend.text=names(inc), args.legend=list(fill=col[inc],
                                                           bty="n",
@@ -321,7 +321,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
                                                           ncol=num_leg_col))
 
     barplot(exposures[inc, dp_order], space=0, col=col[inc], border=NA,
-            ylim=c(0, 1), names.arg=dpnames, ylab="Component exposure", las=2,
+            ylim=c(0, 1), names.arg=dpnames[dp_order], ylab="Component exposure", las=2,
             cex.names=0.6)
   } else {
 
@@ -330,7 +330,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
     # but seems to work?
     barplot(exposures[inc, dp_order], space=0, col=col[inc],
             border=NA, ylim=c(0, 1),
-            xlim=c(0,length(dpindices)*1.3), names.arg=dpnames,
+            xlim=c(0,length(dpindices)*1.3), names.arg=dpnames[dp_order],
             ylab="Component exposure", las=2, cex.names=0.6,
             legend.text=rev(names(inc)), args.legend=list(fill=col[inc],
                                                           bty="n",
