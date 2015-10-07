@@ -4,16 +4,15 @@
 #' with no associated data, and one child DP node per row of data. Every DP node
 #' shares the same concentration parameter, and will automatically be 'activated'
 #' (made available for posterior samplig). The base distribution is a uniform Dirichlet
-#' with psuedocount of '1' in each data category. Can immediately run \code{\link{hdp_posterior}}
+#' with psuedocount 1 in each data category. Can immediately run \code{\link{hdp_posterior}}
 #' to collect posterior samples.
-#'
 #' To define a custom HDP structure, see \code{\link{hdp_init}}, \code{\link{hdp_adddp}},
 #' and \code{\link{hdp_addconparam}}.
 #'
 #' @param data A \code{data.frame} or \code{matrix} of counts with one row for every sample
 #'  and one column for every data category.
-#' @param initcc Number of data clusters to start with
-#'  (every data item is randomly assigned to a cluster to start with)
+#' @param initcc Number of initial data clusters
+#'  (every data item is randomly assigned to a cluster to start with).
 #' @param alphaa Shape hyperparameter for the gamma prior over the concentration parameter.
 #' @param alphab Rate hyperparameter for the gamma prior over the concentration parameter.
 
