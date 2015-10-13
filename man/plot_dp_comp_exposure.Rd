@@ -5,7 +5,10 @@
 \title{Plot the mean distribution over components for each specified DP}
 \usage{
 plot_dp_comp_exposure(hdpsample, dpindices, col, dpnames = NULL,
-  main_text = NULL, incl_numdata_plot = TRUE, incl_nonsig = TRUE)
+  main_text = NULL, incl_numdata_plot = TRUE, incl_nonsig = TRUE,
+  ylab_numdata = "Number of data itmes", ylab_exp = "Component exposure",
+  leg.title = "Component", cex.names = 0.6, cex.axis = 0.7, mar = c(1,
+  4, 2, 0.5), oma = c(1.5, 1.5, 1, 1), ...)
 }
 \arguments{
 \item{hdpsample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
@@ -23,6 +26,22 @@ data items per DP be included? (Default TRUE)}
 
 \item{incl_nonsig}{Logical - should components whose credibility intervals include 0
 be included (per DP)? (Default TRUE)}
+
+\item{ylab_numdata}{Vertical axis label for numdata plot}
+
+\item{ylab_exp}{Vertical exis label for exposure plot}
+
+\item{leg.title}{Legend title}
+
+\item{cex.names}{Expansion factor for bar labels (dpnames) in exposure plot}
+
+\item{cex.axis}{Expansion factor for vertical-axis annotation}
+
+\item{mar}{See ?par}
+
+\item{oma}{See ?par}
+
+\item{...}{Other arguments to barplot}
 }
 \description{
 Plot the mean distribution over components for each specified DP

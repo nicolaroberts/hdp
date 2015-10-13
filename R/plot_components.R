@@ -63,13 +63,17 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
 #' @param grouping (Optional) A factor indicating data category groups.
 #' @param col Either a single colour for all data categories, or a vector of
 #'  colours for each group (in the same order as the levels of the grouping factor)
-#' @param col_nonsig (Optional) Colour for any data category whose 95% credibility interval
+#' @param col_nonsig (Optional) Colour for any data category whose 95\% credibility interval
 #'  overlaps with zero (if set, overrides col argument)
 #' @param show_group_labels Logical - should group labels be added to the top
 #'  horizontal axis? (default FALSE) (only works if categories alreayd come in orders)
 #' @param cred_int Logical - should 95\% credibility intervals be plotted? (default TRUE)
 #' @param weights (Optional) Weights over the data categories to adjust their
 #'  relative contribution (multiplicative)
+#' @param main_text (Optional) Character vector of custom plot titles (one for each component plotted)
+#' @param group_label_height Multiplicative factor from top of plot for group label placement
+#' @param cex.cat Expansion factor for the (optional) cat_names
+#' @param ... Other arguments to barplot
 #' @export
 #' @examples
 #' mut_example_multi <- hdp_extract_components(mut_example_multi)
@@ -87,7 +91,8 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
 plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
                             grouping=NULL, col="grey70", col_nonsig=NULL,
                             show_group_labels=FALSE, cred_int=TRUE,
-                            weights=NULL){
+                            weights=NULL, main_text=NULL,
+                            group_label_height=1.05, cex.cat=0.7, ...){
 
   # input checks
   if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
@@ -139,12 +144,24 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
     comp_to_plot <- comp
   }
 
+  if(!class(main_text) %in% c("character", "NULL") |
+       !length(main_text) %in% c(length(comp_to_plot), 0)){
+    stop("main_text must be a character vector with one value for every
+         component being plotted, or NULL")
+  }
+
   # colours for each category
   if (is.null(grouping)){
     cat_cols <- rep(col, ncat)
   } else {
     cat_cols <- col[grouping]
   }
+
+  # main titles
+  if (is.null(main_text)){
+    main_text <- paste("Component", comp_to_plot)
+  }
+  names(main_text) <- comp_to_plot
 
   for (ii in comp_to_plot){
     # mean categorical distribution (sig), and credibility interval
@@ -168,12 +185,12 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
     }
 
     # max plotting height
-    plottop <- max(0.2, ceiling(max(ci)/0.1)*0.1)
+    plottop <- ceiling(max(ci)/0.1)*0.1
 
     # main barplot
     b <- barplot(sig, col=cat_cols_copy, xaxt="n", ylim=c(0,plottop*1.1),
                  border=NA, names.arg=rep("", ncat), xpd=F,
-                 main=paste("Component", ii))
+                 main=main_text[as.character(ii)], ...)
 
     # add credibility intervals
     if (cred_int & !is.null(ci)){
@@ -182,7 +199,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 
     # add category names
     if (!is.null(cat_names)){
-      mtext(cat_names, side=1, las=2, at=b, cex=0.7,
+      mtext(cat_names, side=1, las=2, at=b, cex=cex.cat,
             family="mono", col=cat_cols)
     }
 
@@ -197,7 +214,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
       segments(x0=b[glstarts], x1=b[glends],
                y0=plottop, col=glcol, lwd=10)
 
-      text(b[floor(glends/2 + glstarts/2)], y=plottop*1.05,
+      text(b[floor(glends/2 + glstarts/2)], y=plottop*group_label_height,
            labels=gl$values)
     }
   }
@@ -216,6 +233,14 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 #'  data items per DP be included? (Default TRUE)
 #' @param incl_nonsig Logical - should components whose credibility intervals include 0
 #'  be included (per DP)? (Default TRUE)
+#' @param ylab_numdata Vertical axis label for numdata plot
+#' @param ylab_exp Vertical exis label for exposure plot
+#' @param leg.title Legend title
+#' @param cex.names Expansion factor for bar labels (dpnames) in exposure plot
+#' @param cex.axis Expansion factor for vertical-axis annotation
+#' @param mar See ?par
+#' @param oma See ?par
+#' @param ... Other arguments to barplot
 #' @export
 #' @examples
 #' mut_example_multi <- hdp_extract_components(mut_example_multi)
@@ -227,7 +252,12 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 
 plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
                                 main_text=NULL, incl_numdata_plot=TRUE,
-                                incl_nonsig=TRUE){
+                                incl_nonsig=TRUE,
+                                ylab_numdata="Number of data itmes",
+                                ylab_exp="Component exposure",
+                                leg.title="Component", cex.names=0.6,
+                                cex.axis=0.7, mar=c(1, 4, 2, 0.5),
+                                oma=c(1.5, 1.5, 1, 1), ...){
 
   # input checks
   if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
@@ -290,8 +320,6 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
             separate plots may be better")
   }
 
-
-
   # mean exposures
   exposures <- t(dp_distn$mean[dpindices,])
 
@@ -310,32 +338,30 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
   num_leg_col <- floor(sqrt(length(inc)))
 
   if (incl_numdata_plot){
-    par(mfrow=c(2, 1), mar=c(1, 4, 2, 0.5), oma=c(1.5, 1.5, 1, 1), cex.axis=0.7)
+    par(mfrow=c(2, 1), mar=mar, oma=oma, cex.axis=cex.axis, las=2)
 
     barplot(numdata[dp_order], main=main_text, col="gray", space=0, border=NA,
-            names.arg='', ylab="Number of data items", las=2,
-            cex.names=0.6,
-            legend.text=names(inc), args.legend=list(fill=col[inc],
-                                                          bty="n",
-                                                          title="Component",
-                                                          ncol=num_leg_col))
+            names.arg='', ylab=ylab_numdata,
+            legend.text=names(inc),
+            args.legend=list(fill=col[inc], bty="n", title=leg.title,
+                             ncol=num_leg_col), ...)
 
     barplot(exposures[inc, dp_order], space=0, col=col[inc], border=NA,
-            ylim=c(0, 1), names.arg=dpnames[dp_order], ylab="Component exposure", las=2,
-            cex.names=0.6)
+            ylim=c(0, 1), names.arg=dpnames[dp_order], ylab=ylab_exp,
+            cex.names=cex.names, ...)
   } else {
 
-    par(cex.axis=0.7)
+    par(cex.axis=cex.axis, las=2)
     # don't understand why legend.text needs rev() here and not in above case,
     # but seems to work?
     barplot(exposures[inc, dp_order], space=0, col=col[inc],
             border=NA, ylim=c(0, 1),
-            xlim=c(0,length(dpindices)*1.3), names.arg=dpnames[dp_order],
-            ylab="Component exposure", las=2, cex.names=0.6,
-            legend.text=rev(names(inc)), args.legend=list(fill=col[inc],
-                                                          bty="n",
-                                                          title="Component",
-                                                          ncol=num_leg_col))
+            xlim=c(0, length(dpindices) + num_leg_col + 1),
+            names.arg=dpnames[dp_order],
+            ylab=ylab_exp, cex.names=cex.names,
+            legend.text=rev(names(inc)),
+            args.legend=list(fill=col[inc], bty="n", title=leg.title,
+                             ncol=num_leg_col), ...)
   }
 
 }

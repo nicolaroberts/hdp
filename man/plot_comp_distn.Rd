@@ -6,7 +6,8 @@
 \usage{
 plot_comp_distn(hdpsample, comp = NULL, cat_names = NULL, grouping = NULL,
   col = "grey70", col_nonsig = NULL, show_group_labels = FALSE,
-  cred_int = TRUE, weights = NULL)
+  cred_int = TRUE, weights = NULL, main_text = NULL,
+  group_label_height = 1.05, cex.cat = 0.7, ...)
 }
 \arguments{
 \item{hdpsample}{A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}}
@@ -21,7 +22,7 @@ The default is to plot all components.}
 \item{col}{Either a single colour for all data categories, or a vector of
 colours for each group (in the same order as the levels of the grouping factor)}
 
-\item{col_nonsig}{(Optional) Colour for any data category whose 95% credibility interval
+\item{col_nonsig}{(Optional) Colour for any data category whose 95\% credibility interval
 overlaps with zero (if set, overrides col argument)}
 
 \item{show_group_labels}{Logical - should group labels be added to the top
@@ -31,6 +32,14 @@ horizontal axis? (default FALSE) (only works if categories alreayd come in order
 
 \item{weights}{(Optional) Weights over the data categories to adjust their
 relative contribution (multiplicative)}
+
+\item{main_text}{(Optional) Character vector of custom plot titles (one for each component plotted)}
+
+\item{group_label_height}{Multiplicative factor from top of plot for group label placement}
+
+\item{cex.cat}{Expansion factor for the (optional) cat_names}
+
+\item{...}{Other arguments to barplot}
 }
 \description{
 Barplot of the mean distribution over data categories for each component
