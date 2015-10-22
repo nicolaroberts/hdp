@@ -38,6 +38,5 @@ Extract major components from the raw clusters
 }}
 \examples{
 hdp_extract_components(mut_example_chain)
-hdp_extract_components(mut_example_multi)
 }
 

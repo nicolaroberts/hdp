@@ -7,8 +7,6 @@
 \alias{clust_categ_counts,hdpSampleChain-method}
 \alias{clust_dp_counts}
 \alias{clust_dp_counts,hdpSampleChain-method}
-\alias{clust_dp_weights}
-\alias{clust_dp_weights,hdpSampleChain-method}
 \alias{cp_values}
 \alias{cp_values,hdpSampleChain-method}
 \alias{final_hdpState}
@@ -41,8 +39,6 @@
 \S4method{clust_categ_counts}{hdpSampleChain}(x, ...)
 
 \S4method{clust_dp_counts}{hdpSampleChain}(x, ...)
-
-\S4method{clust_dp_weights}{hdpSampleChain}(x, ...)
 }
 \arguments{
 \item{x}{Object of class hdpSampleChain}
@@ -71,8 +67,6 @@ hdpSampleChain class for posterior samples of a hierarchical Dirichlet Process
 \item \code{clust_categ_counts}: Get category vs cluster counts for each posterior sample
 
 \item \code{clust_dp_counts}: Get dp node vs cluster counts for each posterior sample
-
-\item \code{clust_dp_weights}: Get dp node vs cluster weights for each posterior sample
 }}
 \section{Slots}{
 
@@ -100,11 +94,6 @@ counting within-DP cluster assignment (aggregating across data categories).
 Number of rows is the number of DPs (constant), and number of
 columns is the number of clusters in that posterior sample (variable).}
 
-\item{\code{clust_dp_weights}}{List of matrices (one from each posterior sample)
-with the weights of each cluster per DP. Number of rows is the number of
-DPs (constant), and number of columns is the number of clusters in that
-posterior sample (variable).}
-
 \item{\code{comp_settings}}{Settings used to
 consolidate raw clusters (variable number across posterior samples) into
 global components (constant number across posterior samples):
@@ -119,10 +108,6 @@ columns is the number of data categories.}
 counting sample-component assignment (aggregating across data categories).
 Number of rows is the number of posterior samples, and number of
 columns is the number of components.}
-
-\item{\code{comp_dp_weights}}{List of matrices (one for each DP)
-with the weights of each component per sample. Number of rows is the number of
-posterior samples, and number of columns is the number of components.}
 
 \item{\code{comp_categ_distn}}{List with elements "mean" and "cred.int", containing
 matrices with the mean (and lower/upper 95% credibility interval) distribution

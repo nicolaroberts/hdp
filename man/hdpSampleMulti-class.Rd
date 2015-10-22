@@ -46,10 +46,6 @@ counting sample-component assignment (aggregating across data categories).
 Number of rows is the number of posterior samples, and number of
 columns is the number of components.}
 
-\item{\code{comp_dp_weights}}{List of matrices (one for each DP)
-with the weights of each component per sample. Number of rows is the number of
-posterior samples, and number of columns is the number of components.}
-
 \item{\code{comp_categ_distn}}{List with elements "mean" and "cred.int", containing
 matrices with the mean (and lower/upper 95% credibility interval) distribution
 over data categories for each component. Number of rows is the number of
