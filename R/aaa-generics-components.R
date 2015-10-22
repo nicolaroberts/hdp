@@ -12,8 +12,7 @@
 #' @export
 #' @examples
 #' hdp_extract_components(mut_example_chain)
-#' hdp_extract_components(mut_example_multi)
-#'
+
 setGeneric("hdp_extract_components",
            function(x, cos.merge=0.9, prop.ex=0.97, redo=TRUE)
              standardGeneric("hdp_extract_components"))
