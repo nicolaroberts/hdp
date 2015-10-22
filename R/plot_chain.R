@@ -30,9 +30,10 @@ plot_lik <- function(chain, start=1, end=length(lik(chain)),
     stop("start and end must be positive integers no greater than iter number")
   }
 
-  # plot
-  lik <- lik(chain)[start:end]
-  plot(seq(start, end), lik, type="l", col=col_lik,
+  # plot - max 5000 points
+  iter <- ceiling(seq(start, end, length=min(end - start, 5000)))
+  lik <- lik(chain)[iter]
+  plot(iter, lik, type="l", col=col_lik,
        xlab=xlab, ylab=ylab, ...)
   abline(v=hdp_settings(chain)$burnin, col=col_burn, lty=2)
 }
