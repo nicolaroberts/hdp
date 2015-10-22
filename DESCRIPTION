@@ -1,6 +1,6 @@
 Package: hdp
 Title: Hierarchical Dirichlet Process for categorical count data
-Version: 0.0.3
+Version: 0.0.4
 Authors@R: c(person("Nicola", "Roberts",
   email="nr3@sanger.ac.uk", role=c("aut", "cre")),
   person("Yee Whye", "Teh", role=c("aut", "cph"),
@@ -12,10 +12,11 @@ Imports:
     methods,
     flexclust,
     coda,
-    clue
+    clue,
+    Matrix
 LazyData: true
-Description: Model categorical count data with a hierarchical tree of Dirichlet
-    Processes. Includes functions to initialise a HDP with a custom tree
+Description: Model categorical count data with a hierarchical Dirichlet
+    Process. Includes functions to initialise a HDP with a custom tree
     structure, perform Gibbs sampling of the posterior distribution,
     and analyse the output. The underlying mathematical theory is
     described by Teh et al. (Hierarchical Dirichlet Processes,
