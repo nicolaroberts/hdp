@@ -341,11 +341,9 @@ setMethod("as.list",
                         cp_values=x@cp_values,
                         clust_categ_counts=x@clust_categ_counts,
                         clust_dp_counts=x@clust_dp_counts,
-                        clust_dp_weights=x@clust_dp_weights,
                         comp_settings=x@comp_settings,
                         comp_categ_counts=x@comp_categ_counts,
                         comp_dp_counts=x@comp_dp_counts,
-                        comp_dp_weights=x@comp_dp_weights,
                         comp_categ_distn=x@comp_categ_distn,
                         comp_dp_distn=x@comp_dp_distn)
             return(ans)
@@ -393,7 +391,6 @@ setMethod("as.list",
                         comp_settings=x@comp_settings,
                         comp_categ_counts=x@comp_categ_counts,
                         comp_dp_counts=x@comp_dp_counts,
-                        comp_dp_weights=x@comp_dp_weights,
                         comp_categ_distn=x@comp_categ_distn,
                         comp_dp_distn=x@comp_dp_distn)
             return(ans)
@@ -519,18 +516,6 @@ setMethod("clust_dp_counts",
             return(ans)
           })
 
-setGeneric("clust_dp_weights",
-           function(x, ...) standardGeneric("clust_dp_weights"))
-#' @describeIn hdpSampleChain Get dp node vs cluster weights for each posterior sample
-#' @aliases clust_dp_weights
-#' @export
-setMethod("clust_dp_weights",
-          signature = "hdpSampleChain",
-          definition = function(x, ...) {
-            ans <- x@clust_dp_weights
-            return(ans)
-          })
-
 
 #' Get settings of component extraction from hdpSampleChain or hdpSampleMulti
 #' @param x hdpSampleChain or hdpSampleMulti
@@ -610,34 +595,6 @@ setMethod("comp_dp_counts",
             ans <- x@comp_dp_counts
             return(ans)
           })
-
-
-#' Get sample vs component weights for each DP
-#' @param x hdpSampleChain or hdpSampleMulti
-#' @return List of matrices (one for each DP)
-#'  with the weights of each component per sample. Number of rows is the number of
-#'  posterior samples, and number of columns is the number of components.
-#' @aliases comp_dp_weights
-#' @export
-setGeneric("comp_dp_weights",
-           function(x) standardGeneric("comp_dp_weights"))
-
-#' @describeIn comp_dp_weights
-setMethod("comp_dp_weights",
-          signature = "hdpSampleChain",
-          definition = function(x) {
-            ans <- x@comp_dp_weights
-            return(ans)
-          })
-
-#' @describeIn comp_dp_weights
-setMethod("comp_dp_weights",
-          signature = "hdpSampleMulti",
-          definition = function(x) {
-            ans <- x@comp_dp_weights
-            return(ans)
-          })
-
 
 #' Get mean distribution over data categories for each component
 #' @param x hdpSampleChain or hdpSampleMulti

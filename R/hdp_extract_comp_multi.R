@@ -153,16 +153,6 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   }
   remove(i, cdclist, cdcmerge)
 
-  # comp_dp_weights
-  cdwlist <- lapply(chlist, comp_dp_weights)
-  cdwmerge <- mapply(function(x, y) lapply(x, merge_cols, y), cdwlist,
-                     comp_mapping, SIMPLIFY=FALSE)
-  cdw <- vector("list", length(cdwmerge[[1]]))
-  for (i in 1:length(cdw)) {
-    cdw[[i]] <- Reduce(rbind, lapply(cdwmerge, `[[`, i))
-    colnames(cdw[[i]]) <- 0:(ncomp-1)
-  }
-  remove(i, cdwlist, cdwmerge)
 
   # Calculate mean and 95% credibility interval for each component's
   # categorical data distribution
@@ -184,7 +174,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   names(ccc_credint) <- 0:(ncomp-1)
 
   # Calculate mean and 95% credibility interval for each DP's
-  # distribution over components (counts and weights?)
+  # distribution over components (counts)
   cdc_norm <- lapply(cdc, function(x) x/rowSums(x, na.rm=TRUE))
 
   cdc_mean <- t(sapply(cdc_norm, colMeans, na.rm=TRUE))
@@ -207,8 +197,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   # add extracted components into hdpSampleMulti slots
   chains@comp_categ_counts <- ccc
-  chains@comp_dp_counts <- cdc
-  chains@comp_dp_weights <- cdw
+  chains@comp_dp_counts <- lapply(cdc, as, "dgCMatrix")
   chains@comp_categ_distn <- list(mean=ccc_mean,
                                  cred.int=ccc_credint)
   chains@comp_dp_distn <- list(mean=cdc_mean,

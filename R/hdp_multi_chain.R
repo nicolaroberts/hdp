@@ -17,7 +17,6 @@ hdp_multi_chain <- function(chain_list){
              comp_settings = list(),
              comp_categ_counts = list(),
              comp_dp_counts = list(),
-             comp_dp_weights= list(),
              comp_categ_distn= list(),
              comp_dp_distn= list(),
              prop.ex=as.numeric(NULL))

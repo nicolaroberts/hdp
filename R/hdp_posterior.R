@@ -18,6 +18,7 @@
 #'  posterior sample. See \code{\link{hdpSampleChain-class}}
 #' @seealso \code{\link{hdp_quick_init}}, \code{\link{hdp_init}}, \code{\link{hdp_addconparam}},
 #'  \code{\link{hdp_adddp}}, \code{\link{hdp_setdata}}, \code{\link{dp_activate}}, \code{\link{dp_freeze}}
+#' @importClassesFrom Matrix dgCMatrix
 #' @export
 #' @examples
 #' my_hdp <- hdp_init(ppindex=0, cpindex=1, hh=rep(1, 6), alphaa=rep(1, 3), alphab=rep(2, 3))
@@ -104,9 +105,8 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
 
   numclass <- sapply(sample, function(x) x$numclass)
   classqq <- lapply(sample, function(x) x$classqq)
-  classnd <- lapply(sample, function(x) x$classnd)
+  classnd <- lapply(sample, function(x) as(x$classnd, "dgCMatrix"))
   alpha <- t(sapply(sample, function(x) x$alpha))
-  beta <- lapply(sample, function(x) x$beta)
 
   # if only one conparam, then alpha can have wrong dims (vector not matrix)
   if (dim(alpha)[1]==1 & n > 1) {
@@ -116,8 +116,6 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
   #translate hdplist back to HDPObject class
   hdp <- as.hdpState(hdplist)
   remove(hdplist)
-
-
 
   ans <- new("hdpSampleChain",
              seed = as.integer(seed),
@@ -131,11 +129,9 @@ hdp_posterior <- function(hdp, burnin, n, space, cpiter=1,
              cp_values = alpha,
              clust_categ_counts = classqq,
              clust_dp_counts = classnd,
-             clust_dp_weights = beta,
              comp_settings = list(),
              comp_categ_counts = list(),
              comp_dp_counts = list(),
-             comp_dp_weights = list(),
              comp_categ_distn = list(),
              comp_dp_distn = list())
 

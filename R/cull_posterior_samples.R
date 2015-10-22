@@ -36,7 +36,6 @@ cull_posterior_samples <- function(chain, ncull){
     chain@comp_settings <- list()
     chain@comp_categ_counts <- list()
     chain@comp_dp_counts <- list()
-    chain@comp_dp_weights <- list()
   }
 
   old_n <- chain@settings$n
@@ -48,13 +47,12 @@ cull_posterior_samples <- function(chain, ncull){
   chain@settings$burnin <- old_burnin + ncull*space
 
   # cut first ncull elements of numcluster, cp_values,
-  # clust_categ_counts, clust_dp_counts, and clust_dp_weights
+  # clust_categ_counts, clust_dp_counts.
 
   chain@numcluster <- chain@numcluster[-c(1:ncull)]
   chain@cp_values <- as.matrix(chain@cp_values[-c(1:ncull),])
   chain@clust_categ_counts <- chain@clust_categ_counts[-c(1:ncull)]
   chain@clust_dp_counts <- chain@clust_dp_counts[-c(1:ncull)]
-  chain@clust_dp_weights <- chain@clust_dp_weights[-c(1:ncull)]
 
   # check validity and return
   if (!validObject(chain)) warning("Not a valid hdpSampleChain object.")

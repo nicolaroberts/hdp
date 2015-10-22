@@ -38,8 +38,7 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
 
   # Step (1)
   # Make each ccc (clust_categ_counts) and
-  # cdc (clust_dp_counts) and
-  # cdw (clust_dp_weights) matrix have the
+  # cdc (clust_dp_counts) matrix have the
   # same number of columns
   maxclust <- max(numcluster(chain))
   clust_label <- 1:maxclust
@@ -53,13 +52,6 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
     ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
     return(ans[, -ncol(ans)])
   })
-
-  cdw_1 <- lapply(clust_dp_weights(chain), function(x){
-    ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
-    return(ans[, -ncol(ans)])
-  })
-
-
 
   # Step (2)
   # Match up raw clusters (matrix columns) across posterior samples (columns not
@@ -87,13 +79,7 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
     },
                   cdc_1, ccc_label, SIMPLIFY=FALSE)
 
-  cdw_2 <- mapply(function(cdw, label) {
-                    colnames(cdw) <- label
-                    cdw[, order(as.numeric(colnames(cdw)))]
-                    },
-                  cdw_1, ccc_label, SIMPLIFY=FALSE)
-
-  remove(ccc_1, cdc_1, cdw_1, ccc_unlist, groupfactor, ccc_clust, ccc_label)
+  remove(ccc_1, cdc_1, ccc_unlist, groupfactor, ccc_clust, ccc_label)
 
   # Step (3)
   # Merge the ccc columns with high cosine similarity.
@@ -133,9 +119,8 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
   clust_label[which(!clust_label %in% use_clust)] <- 0
   ccc_4 <- lapply(ccc_2, merge_cols, clust_label)
   cdc_4 <- lapply(cdc_2, merge_cols, clust_label)
-  cdw_4 <- lapply(cdw_2, merge_cols, clust_label)
 
-  remove(ccc_2, ccc_3, cdc_2, cdw_2, avg_prop_data,
+  remove(ccc_2, ccc_3, cdc_2, avg_prop_data,
          cl_below_prop, cl_ordered, use_clust, clust_label)
 
 
@@ -157,16 +142,10 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
     return(x)
   })
 
-  cdw_5 <- lapply(cdw_4, function(x) {
-    x <- x[, colorder]
-    colnames(x) <- 0:(ncol(x)-1)
-    return(x)
-  })
-
   # number of components
   ncomp <- length(colorder)
 
-  remove(ccc_4, cdc_4, cdw_4, avg_ndi, colorder)
+  remove(ccc_4, cdc_4, avg_ndi, colorder)
 
 
   # Step (6)
@@ -176,15 +155,13 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
     ccc_ans[[i]] <- t(sapply(ccc_5, function(x) x[, i]))
   }
 
-  # Convert cdc and cdw into list of length ndp, with matrices nsamp*ncomp
+  # Convert cdc into list of length ndp, with matrices nsamp*ncomp
   cdc_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncomp)), ndp)
-  cdw_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncomp)), ndp)
   for (i in 1:ndp){
     cdc_ans[[i]] <- t(sapply(cdc_5, function(x) x[i, ]))
-    cdw_ans[[i]] <- t(sapply(cdw_5, function(x) x[i, ]))
   }
 
-  remove(ccc_5, cdc_5, cdw_5)
+  remove(ccc_5, cdc_5)
 
 
   # Step (7)
@@ -209,7 +186,7 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
 
   # Step (8)
   # Calculate mean and 95% credibility interval for each DP's
-  # distribution over components (counts and weights?)
+  # distribution over components (counts)
   cdc_norm <- lapply(cdc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
   cdc_mean <- t(sapply(cdc_norm, colMeans, na.rm=TRUE))
@@ -230,8 +207,7 @@ hdp_extract_comp_single <- function(chain, prop.ex=0.97, cos.merge=0.90){
                               cos.merge=cos.merge)
 
   chain@comp_categ_counts <- ccc_ans
-  chain@comp_dp_counts <- cdc_ans
-  chain@comp_dp_weights <- cdw_ans
+  chain@comp_dp_counts <- lapply(cdc_ans, as, "dgCMatrix")
   chain@comp_categ_distn <- list(mean=ccc_mean,
                                  cred.int=ccc_credint)
   chain@comp_dp_distn <- list(mean=cdc_mean,

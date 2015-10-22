@@ -188,10 +188,6 @@ setClass("hdpState",
 #'  counting within-DP cluster assignment (aggregating across data categories).
 #'  Number of rows is the number of DPs (constant), and number of
 #'  columns is the number of clusters in that posterior sample (variable).
-#' @slot clust_dp_weights List of matrices (one from each posterior sample)
-#'  with the weights of each cluster per DP. Number of rows is the number of
-#'  DPs (constant), and number of columns is the number of clusters in that
-#'  posterior sample (variable).
 #' @slot comp_settings Settings used to
 #'  consolidate raw clusters (variable number across posterior samples) into
 #'  global components (constant number across posterior samples):
@@ -204,9 +200,6 @@ setClass("hdpState",
 #'  counting sample-component assignment (aggregating across data categories).
 #'  Number of rows is the number of posterior samples, and number of
 #'  columns is the number of components.
-#' @slot comp_dp_weights List of matrices (one for each DP)
-#'  with the weights of each component per sample. Number of rows is the number of
-#'  posterior samples, and number of columns is the number of components.
 #' @slot comp_categ_distn List with elements "mean" and "cred.int", containing
 #'  matrices with the mean (and lower/upper 95% credibility interval) distribution
 #'  over data categories for each component. Number of rows is the number of
@@ -226,11 +219,9 @@ setClass("hdpSampleChain",
            cp_values = "matrix",
            clust_categ_counts = "list",
            clust_dp_counts = "list",
-           clust_dp_weights = "list",
            comp_settings = "list",
            comp_categ_counts = "list",
            comp_dp_counts = "list",
-           comp_dp_weights="list",
            comp_categ_distn="list",
            comp_dp_distn="list"),
          validity = function(object){
@@ -242,15 +233,13 @@ setClass("hdpSampleChain",
            nsamp <- length(object@numcluster)
            if (nrow(object@cp_values) != nsamp |
                  length(object@clust_categ_counts) != nsamp |
-                 length(object@clust_dp_counts) != nsamp |
-                 length(object@clust_dp_weights) != nsamp) {
+                 length(object@clust_dp_counts) != nsamp) {
              is_valid <- FALSE
              message("inconsistent sample number")
            }
            nclust <- object@numcluster + 1
            if (any(sapply(object@clust_categ_counts, ncol) != nclust) |
-                 any(sapply(object@clust_dp_counts, ncol) != nclust) |
-                 any(sapply(object@clust_dp_weights, ncol) != nclust)) {
+                 any(sapply(object@clust_dp_counts, ncol) != nclust)) {
              is_valid <- FALSE
              message("inconsistent cluster number")
            }
@@ -258,10 +247,6 @@ setClass("hdpSampleChain",
            if (any(sapply(object@clust_categ_counts, nrow) != ncateg)) {
              is_valid <- FALSE
              message("inconsistent category number")
-           }
-           if (any(signif(sapply(object@clust_dp_weights, rowSums), 3) != 1)){
-             is_valid <- FALSE
-             message("clust_dp_weights do not all sum to 1")
            }
            settings <- sapply(object@settings, function(x) x)
            if (!all.equal(names(settings), c("burnin","n","space","cpiter"))){
@@ -295,9 +280,6 @@ setClass("hdpSampleChain",
 #'  counting sample-component assignment (aggregating across data categories).
 #'  Number of rows is the number of posterior samples, and number of
 #'  columns is the number of components.
-#' @slot comp_dp_weights List of matrices (one for each DP)
-#'  with the weights of each component per sample. Number of rows is the number of
-#'  posterior samples, and number of columns is the number of components.
 #' @slot comp_categ_distn List with elements "mean" and "cred.int", containing
 #'  matrices with the mean (and lower/upper 95% credibility interval) distribution
 #'  over data categories for each component. Number of rows is the number of
@@ -315,7 +297,6 @@ setClass("hdpSampleMulti",
            comp_settings = "list",
            comp_categ_counts = "list",
            comp_dp_counts = "list",
-           comp_dp_weights="list",
            comp_categ_distn="list",
            comp_dp_distn="list",
            prop.ex="numeric"),
