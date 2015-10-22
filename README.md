@@ -13,7 +13,7 @@ devtools::install_github("nicolaroberts/hdp", build_vignettes = TRUE)
 For tutorials, see `browseVignettes("hdp")`. (Note that proxy settings may interfere here.) 
 
 
-R package to model categorical count data with a hierarchical tree of Dirichlet Processes. Includes functions to initialise a HDP of any shape, perform Gibbs sampling of the posterior distribution, and analyse the output. The underlying theory is described by Teh et al. (Hierarchical Dirichlet Processes, Journal of the American Statistical Association, 2006, 101:476). This R package was adapted from open source MATLAB and C code written by Yee Whye Teh and available here http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz
+R package to model categorical count data with a hierarchical Dirichlet Process. Includes functions to initialise a HDP of any shape, perform Gibbs sampling of the posterior distribution, and analyse the output. The underlying theory is described by Teh et al. (Hierarchical Dirichlet Processes, Journal of the American Statistical Association, 2006, 101:476). This R package was adapted from open source MATLAB and C code written by Yee Whye Teh and available here http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz
 
 ```
 Copyright (c) 2015 Genome Research Ltd. 

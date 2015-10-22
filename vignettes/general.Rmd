@@ -186,9 +186,9 @@ The following plots show the mean distribution of components at each specified D
 See `?plot_dp_comp_exposure` for more options.  
 ```{r plotdpexposure}
 plot_dp_comp_exposure(quick_chain_v2, dpindices=2:6, main_text="First five samples",
-                      col=RColorBrewer::brewer.pal(3, "Set3"))
+                      col=RColorBrewer::brewer.pal(4, "Set3"))
 plot_dp_comp_exposure(quick_chain_v2, dpindices=7:11, main_text="Last five samples",
-                      col=RColorBrewer::brewer.pal(3, "Set3"))
+                      col=RColorBrewer::brewer.pal(4, "Set3"))
 ```
 
 Note that posterior samples collected off just one finite chain are somewhat correlated
