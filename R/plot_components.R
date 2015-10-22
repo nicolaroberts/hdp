@@ -23,7 +23,7 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
   }
   if (!validObject(hdpsample)) stop("hdpsample not valid")
   if (length(comp_categ_counts(hdpsample)) == 0) {
-    stop("No component info for hdpsample. First run hdp_extract_component")
+    stop("No component info for hdpsample. First run hdp_extract_components")
   }
   if(class(legend) != "logical") stop("legend must be TRUE or FALSE")
 
@@ -100,7 +100,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
   }
   if (!validObject(hdpsample)) stop("hdpsample not valid")
   if (length(comp_categ_counts(hdpsample)) == 0) {
-    stop("No component info for hdpsample. First run hdp_extract_comp_single")
+    stop("No component info for hdpsample. First run hdp_extract_components")
   }
 
   if (class(hdpsample) == "hdpSampleChain") {
@@ -265,7 +265,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
   }
   if (!validObject(hdpsample)) stop("hdpsample not valid")
   if (length(comp_categ_counts(hdpsample)) == 0) {
-    stop("No component info for hdpsample. First run hdp_extract_comp_single")
+    stop("No component info for hdpsample. First run hdp_extract_components")
   }
   dp_distn <- comp_dp_distn(hdpsample)
   ndp <- nrow(dp_distn$mean)
