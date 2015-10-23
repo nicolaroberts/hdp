@@ -47,7 +47,7 @@ Barplot of the mean distribution over data categories for each component
 \examples{
 mut_example_multi <- hdp_extract_components(mut_example_multi)
 bases <- c("A", "C", "G", "T")
-trinuc_context <- paste0(rep(rep(bases, times=4), each=6),
+trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
                          rep(c("C", "T"), each=48),
                          rep(bases, times=24))
 group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
