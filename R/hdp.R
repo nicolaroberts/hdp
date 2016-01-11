@@ -1,6 +1,10 @@
 #' @import methods
 NULL
 
+.onUnload <- function(libpath){
+  library.dynam.unload("hdp", libpath)
+}
+
 #' Fake categorical count data
 #'
 #' Fake categorical count data with 10 samples and 6 categories.
