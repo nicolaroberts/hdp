@@ -135,7 +135,7 @@ setMethod("show",
           function(object) {
             cat("Object of class", class(object), "\n")
             cat(" Number of data items:", object@numdata, "\n")
-            if (object@numdata==0){
+            if (object@numdata == 0){
               cat(" Number of child data tables in each cluster:",
                   object@classnd, "\n")
             } else {
@@ -215,7 +215,7 @@ setMethod("show",
                            c("Shape", "Rate", "Value"))))
             cat(" Number of data categories:", length(object@base@hh), "\n")
             cat(" Number of clusters:", object@base@numclass, "\n")
-            if (length(object@initcc)==1) {
+            if (length(object@initcc) == 1) {
               cat(" Initialised with", object@initcc,
                   "clusters, using random seed", object@seed_activate, "\n")
             }
@@ -370,7 +370,7 @@ setMethod("show",
                   object@comp_settings$prop.ex,
                   " Merge if cosine sim >",
                   object@comp_settings$cos.merge, "\n")
-              cat(" Component number:", ncomp-1, "\n")
+              cat(" Component number:", ncomp - 1, "\n")
             }
             cat(" ----------\n")
             cat(" Final hdpState: \n")
@@ -415,7 +415,7 @@ setMethod("show",
                   object@prop.ex,
                   " Merge if cosine sim >",
                   object@comp_settings$cos.merge, "\n")
-              cat(" Component number:", ncomp-1, "\n")
+              cat(" Component number:", ncomp - 1, "\n")
             }
             cat(" ----------\n")
             cat(" Final hdpState from first chain: \n")
@@ -525,7 +525,7 @@ setMethod("clust_dp_counts",
 setGeneric("hdp_comp_settings",
            function(x) standardGeneric("hdp_comp_settings"))
 
-#' @describeIn hdp_comp_settings
+#' @describeIn hdp_comp_settings Extract settings for hdpSampleChain
 setMethod("hdp_comp_settings",
           signature = "hdpSampleChain",
           definition = function(x) {
@@ -533,7 +533,7 @@ setMethod("hdp_comp_settings",
             return(ans)
           })
 
-#' @describeIn hdp_comp_settings
+#' @describeIn hdp_comp_settings Extract settings for hdpSampleMulti
 setMethod("hdp_comp_settings",
           signature = "hdpSampleMulti",
           definition = function(x) {
@@ -552,7 +552,7 @@ setMethod("hdp_comp_settings",
 setGeneric("comp_categ_counts",
            function(x) standardGeneric("comp_categ_counts"))
 
-#' @describeIn comp_categ_counts
+#' @describeIn comp_categ_counts For hdpSampleChain
 setMethod("comp_categ_counts",
           signature = "hdpSampleChain",
           definition = function(x) {
@@ -560,7 +560,7 @@ setMethod("comp_categ_counts",
             return(ans)
           })
 
-#' @describeIn comp_categ_counts
+#' @describeIn comp_categ_counts For hdpSampleMulti
 setMethod("comp_categ_counts",
           signature = "hdpSampleMulti",
           definition = function(x) {
@@ -580,7 +580,7 @@ setMethod("comp_categ_counts",
 setGeneric("comp_dp_counts",
            function(x) standardGeneric("comp_dp_counts"))
 
-#' @describeIn comp_dp_counts
+#' @describeIn comp_dp_counts For hdpSampleChain
 setMethod("comp_dp_counts",
           signature = "hdpSampleChain",
           definition = function(x) {
@@ -588,7 +588,7 @@ setMethod("comp_dp_counts",
             return(ans)
           })
 
-#' @describeIn comp_dp_counts
+#' @describeIn comp_dp_counts For hdpSampleMulti
 setMethod("comp_dp_counts",
           signature = "hdpSampleMulti",
           definition = function(x) {
@@ -607,7 +607,7 @@ setMethod("comp_dp_counts",
 setGeneric("comp_categ_distn",
            function(x) standardGeneric("comp_categ_distn"))
 
-#' @describeIn comp_categ_distn
+#' @describeIn comp_categ_distn For hdpSampleChain
 setMethod("comp_categ_distn",
           signature = "hdpSampleChain",
           definition = function(x) {
@@ -615,7 +615,7 @@ setMethod("comp_categ_distn",
             return(ans)
           })
 
-#' @describeIn comp_categ_distn
+#' @describeIn comp_categ_distn For hdpSampleMulti
 setMethod("comp_categ_distn",
           signature = "hdpSampleMulti",
           definition = function(x) {
@@ -635,7 +635,7 @@ setMethod("comp_categ_distn",
 setGeneric("comp_dp_distn",
            function(x) standardGeneric("comp_dp_distn"))
 
-#' @describeIn comp_dp_distn
+#' @describeIn comp_dp_distn For hdpSampleChain
 setMethod("comp_dp_distn",
           signature = "hdpSampleChain",
           definition = function(x) {
@@ -643,7 +643,7 @@ setMethod("comp_dp_distn",
             return(ans)
           })
 
-#' @describeIn comp_dp_distn
+#' @describeIn comp_dp_distn For hdpSampleMulti
 setMethod("comp_dp_distn",
           signature = "hdpSampleMulti",
           definition = function(x) {

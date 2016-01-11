@@ -17,7 +17,7 @@ setGeneric("hdp_extract_components",
            function(x, cos.merge=0.9, prop.ex=0.97, redo=TRUE)
              standardGeneric("hdp_extract_components"))
 
-#' @describeIn hdp_extract_components
+#' @describeIn hdp_extract_components Extract components for hdpSampleChain
 setMethod("hdp_extract_components",
           signature = "hdpSampleChain",
           definition = function(x, cos.merge, prop.ex) {
@@ -25,7 +25,7 @@ setMethod("hdp_extract_components",
             return(ans)
           })
 
-#' @describeIn hdp_extract_components
+#' @describeIn hdp_extract_components Extract components for hdpSampleMulti
 setMethod("hdp_extract_components",
           signature = "hdpSampleMulti",
           definition = function(x, cos.merge, redo) {
