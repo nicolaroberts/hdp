@@ -112,7 +112,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
   comp_distn <- comp_categ_distn(hdpsample)
   ncomp <- nrow(comp_distn$mean)-1
   if (class(comp) != "NULL") {
-    if (class(comp) != "numeric" | any(comp %% 1 != 0) |
+    if ( !is.numeric(comp) | any(comp %% 1 != 0) |
           any(comp < 0) | any(comp > ncomp)) {
       stop(paste("comp must be integer between 0 and", ncomp))
     }
@@ -341,7 +341,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
     par(mfrow=c(2, 1), mar=mar, oma=oma, cex.axis=cex.axis, las=2)
 
     barplot(numdata[dp_order], main=main_text, col="gray", space=0, border=NA,
-            names.arg='', ylab=ylab_numdata,
+            names.arg="", ylab=ylab_numdata,
             legend.text=names(inc),
             args.legend=list(fill=col[inc], bty="n", title=leg.title,
                              ncol=num_leg_col), ...)
