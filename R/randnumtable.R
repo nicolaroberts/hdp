@@ -1,11 +1,11 @@
-# func to randomly assign a number of tables 
+# func to randomly assign a number of tables
 randnumtable <- function(weights,maxtable){
   numtable <- rep(0, length(maxtable))
   B <- unique(sort(maxtable))
   J <- match(maxtable, B)
-  
+
   weights <- log(weights)
-  
+
   for (ii in 1:length(B)){
     maxtable <- B[ii]
     if (maxtable > 0){
