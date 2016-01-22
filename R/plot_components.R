@@ -1,7 +1,29 @@
-#' Plot number of data items assigned to each component for each posterior sample.
+#' Plot extracted components
 #'
-#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including
-#'  output from \code{\link{hdp_extract_components}}
+#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including output
+#'  from \code{\link{hdp_extract_components}}
+#' @name plotcomp
+#' @examples
+#' mut_example_multi <- hdp_extract_components(mut_example_multi)
+#' plot_comp_size(mut_example_multi, bty="L")
+#' bases <- c("A", "C", "G", "T")
+#' trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
+#'                          rep(c("C", "T"), each=48),
+#'                          rep(bases, times=24))
+#' group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
+#'                            each=16))
+#' plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
+#'                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
+#'                 col_nonsig="grey80", show_group_labels=TRUE)
+#' plot_dp_comp_exposure(mut_example_multi, 5:30,
+#'                       RColorBrewer::brewer.pal(12, "Set3"))
+#' plot_dp_comp_exposure(mut_example_multi, 5:30,
+#'                       RColorBrewer::brewer.pal(12, "Set3"),
+#'                       incl_numdata_plot=FALSE, incl_nonsig=FALSE)
+NULL
+#> NULL
+
+
 #' @param legend Logical - should a legend be included? (default TRUE)
 #' @param col_a Color ramp side for early posterior samples (if hdpSampleChain) or first chain (if hdpSampleMulti)
 #' @param col_b Color ramp side for late posterior samples (if hdpSampleChain) or last chain (if hdpSampleMulti)
@@ -9,10 +31,7 @@
 #' @param ylab Vertical axis label
 #' @param ... Other arguments to plot
 #' @export
-#' @examples
-#' mut_example_multi <- hdp_extract_components(mut_example_multi)
-#' plot_comp_size(mut_example_multi, bty="L")
-#'
+#' @rdname plotcomp
 plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
                            col_b="skyblue3", xlab="Component",
                            ylab="Number of data items", ...){
@@ -52,11 +71,6 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
   }
 }
 
-
-
-#' Barplot of the mean distribution over data categories for each component
-#'
-#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
 #' @param comp (Optional) Number(s) of the component(s) to plot (from 0 to the max component number).
 #'  The default is to plot all components.
 #' @param cat_names (Optional) Data category names to label the horizontal axis
@@ -70,28 +84,15 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
 #' @param cred_int Logical - should 95\% credibility intervals be plotted? (default TRUE)
 #' @param weights (Optional) Weights over the data categories to adjust their
 #'  relative contribution (multiplicative)
-#' @param main_text (Optional) Character vector of custom plot titles (one for each component plotted)
+#' @param plot_title (Optional) Character vector of custom plot titles (one for each component plotted)
 #' @param group_label_height Multiplicative factor from top of plot for group label placement
 #' @param cex.cat Expansion factor for the (optional) cat_names
-#' @param ... Other arguments to barplot
 #' @export
-#' @examples
-#' mut_example_multi <- hdp_extract_components(mut_example_multi)
-#' bases <- c("A", "C", "G", "T")
-#' trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
-#'                          rep(c("C", "T"), each=48),
-#'                          rep(bases, times=24))
-#' group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
-#'                            each=16))
-#' plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
-#'                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
-#'                 col_nonsig="grey80", show_group_labels=TRUE)
-#'
-
+#' @rdname plotcomp
 plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
                             grouping=NULL, col="grey70", col_nonsig=NULL,
                             show_group_labels=FALSE, cred_int=TRUE,
-                            weights=NULL, main_text=NULL,
+                            weights=NULL, plot_title=NULL,
                             group_label_height=1.05, cex.cat=0.7, ...){
 
   # input checks
@@ -144,9 +145,9 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
     comp_to_plot <- comp
   }
 
-  if(!class(main_text) %in% c("character", "NULL") |
-       !length(main_text) %in% c(length(comp_to_plot), 0)){
-    stop("main_text must be a character vector with one value for every
+  if(!class(plot_title) %in% c("character", "NULL") |
+       !length(plot_title) %in% c(length(comp_to_plot), 0)){
+    stop("plot_title must be a character vector with one value for every
          component being plotted, or NULL")
   }
 
@@ -158,10 +159,10 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
   }
 
   # main titles
-  if (is.null(main_text)){
-    main_text <- paste("Component", comp_to_plot)
+  if (is.null(plot_title)){
+    plot_title <- paste("Component", comp_to_plot)
   }
-  names(main_text) <- comp_to_plot
+  names(plot_title) <- comp_to_plot
 
   for (ii in comp_to_plot){
     # mean categorical distribution (sig), and credibility interval
@@ -189,8 +190,8 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 
     # main barplot
     b <- barplot(sig, col=cat_cols_copy, xaxt="n", ylim=c(0,plottop*1.1),
-                 border=NA, names.arg=rep("", ncat), xpd=F,
-                 main=main_text[as.character(ii)], ...)
+                 border=NA, names.arg=rep("", ncat), xpd=F, las=1,
+                 main=plot_title[as.character(ii)], ...)
 
     # add credibility intervals
     if (cred_int & !is.null(ci)){
@@ -221,18 +222,15 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 }
 
 
-
-#' Plot the mean distribution over components for each specified DP
-#'
-#' @param hdpsample A hdpSampleChain or hdpSampleMulti object including output from \code{\link{hdp_extract_components}}
 #' @param dpindices Indices of DP nodes to plot
-#' @param col Colours of each component, from 0 to the max number
+#' @param col_comp Colours of each component, from 0 to the max number
 #' @param dpnames (Optional) Names of the DP nodes
 #' @param main_text (Optional) Text at top of plot
 #' @param incl_numdata_plot Logical - should an upper barplot indicating the number of
 #'  data items per DP be included? (Default TRUE)
 #' @param incl_nonsig Logical - should components whose credibility intervals include 0
 #'  be included (per DP)? (Default TRUE)
+#' @param incl_comp0 Logical - should component zero be plotted? (Default TRUE)
 #' @param ylab_numdata Vertical axis label for numdata plot
 #' @param ylab_exp Vertical exis label for exposure plot
 #' @param leg.title Legend title
@@ -240,19 +238,11 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 #' @param cex.axis Expansion factor for vertical-axis annotation
 #' @param mar See ?par
 #' @param oma See ?par
-#' @param ... Other arguments to barplot
 #' @export
-#' @examples
-#' mut_example_multi <- hdp_extract_components(mut_example_multi)
-#' plot_dp_comp_exposure(mut_example_multi, 5:30,
-#'                       RColorBrewer::brewer.pal(12, "Set3"))
-#' plot_dp_comp_exposure(mut_example_multi, 5:30,
-#'                       RColorBrewer::brewer.pal(12, "Set3"),
-#'                       incl_numdata_plot=FALSE, incl_nonsig=FALSE)
-
-plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
+#' @rdname plotcomp
+plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
                                 main_text=NULL, incl_numdata_plot=TRUE,
-                                incl_nonsig=TRUE,
+                                incl_nonsig=TRUE, incl_comp0=TRUE,
                                 ylab_numdata="Number of data items",
                                 ylab_exp="Component exposure",
                                 leg.title="Component", cex.names=0.6,
@@ -274,8 +264,8 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
         any(dpindices < 1) | any(dpindices > ndp)) {
     stop(paste("dpindices must be integers between 1 and", ndp))
   }
-  if (!length(col) >= ncomp) {
-    stop(paste("col must specify at least", ncomp, "colours"))
+  if (!length(col_comp) >= ncomp) {
+    stop(paste("col_comp must specify at least", ncomp, "colours"))
   }
   if (!class(dpnames) %in% c("character", "NULL") |
         !length(dpnames) %in% c(length(dpindices), 0)) {
@@ -332,21 +322,26 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
     }
   }
 
+  # exclude signature 0
+  if (!incl_comp0){
+    exposures <- exposures[-1,]
+  }
+
   # which components to include in this plot
   inc <- which(rowSums(exposures, na.rm=T)>0)
 
   num_leg_col <- floor(sqrt(length(inc)))
 
   if (incl_numdata_plot){
-    par(mfrow=c(2, 1), mar=mar, oma=oma, cex.axis=cex.axis, las=2)
+    par(mfrow=c(2, 1), mar=mar, oma=oma, cex.axis=cex.axis, las=1)
 
     barplot(numdata[dp_order], main=main_text, col="gray", space=0, border=NA,
             names.arg="", ylab=ylab_numdata,
             legend.text=names(inc),
-            args.legend=list(fill=col[inc], bty="n", title=leg.title,
+            args.legend=list(fill=col_comp[inc], bty="n", title=leg.title,
                              ncol=num_leg_col), ...)
 
-    barplot(exposures[inc, dp_order], space=0, col=col[inc], border=NA,
+    barplot(exposures[inc, dp_order], space=0, col=col_comp[inc], border=NA,
             ylim=c(0, 1), names.arg=dpnames[dp_order], ylab=ylab_exp,
             cex.names=cex.names, ...)
   } else {
@@ -354,13 +349,13 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col, dpnames=NULL,
     par(cex.axis=cex.axis, las=2)
     # don't understand why legend.text needs rev() here and not in above case,
     # but seems to work?
-    barplot(exposures[inc, dp_order], space=0, col=col[inc],
+    barplot(exposures[inc, dp_order], space=0, col=col_comp[inc],
             border=NA, ylim=c(0, 1),
             xlim=c(0, length(dpindices) + num_leg_col + 1),
             names.arg=dpnames[dp_order],
             ylab=ylab_exp, cex.names=cex.names,
             legend.text=rev(names(inc)),
-            args.legend=list(fill=col[inc], bty="n", title=leg.title,
+            args.legend=list(fill=col_comp[inc], bty="n", title=leg.title,
                              ncol=num_leg_col), ...)
   }
 

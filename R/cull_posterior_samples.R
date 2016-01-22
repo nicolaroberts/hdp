@@ -14,10 +14,12 @@
 #' @seealso \code{\link{plot_lik}}, \code{\link{plot_numcluster}},
 #'  \code{\link{plot_data_assigned}}
 #' @examples
+#' plot_lik(mut_example_chain)
+#' plot_numcluster(mut_example_chain)
 #' chain_adj <- cull_posterior_samples(mut_example_chain, 20)
 #' plot_lik(chain_adj)
 #' plot_numcluster(chain_adj)
-#' plot_data_assigned(chain_adj)
+
 cull_posterior_samples <- function(chain, ncull){
 
   # input checks
@@ -33,9 +35,13 @@ cull_posterior_samples <- function(chain, ncull){
   # if component slot exist, clear them
   if (length(comp_categ_counts(chain)) > 0 ){
     message("Deleting component calculations. Re-run hdp_extract_components")
-    chain@comp_settings <- list()
-    chain@comp_categ_counts <- list()
-    chain@comp_dp_counts <- list()
+    numcomp <- as.integer(NULL)
+    prop.ex <- as.numeric(NULL)
+    comp_cos_merge <- as.numeric(NULL)
+    comp_categ_counts <- list()
+    comp_dp_counts <- list()
+    comp_categ_distn <- list()
+    comp_dp_distn <- list()
   }
 
   old_n <- chain@settings$n

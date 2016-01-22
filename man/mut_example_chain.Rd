@@ -16,7 +16,7 @@ carcinomas, and 100 skin cutaneous melanomas.
 Data is derived from TCGA exome-sequencing studies.
 Each sample was assigned to a unique child DP node, with one parent DP node per
 cancer type, and one grandparent DP node at the top level.
-Chain initialised with 10 clusters, then run through 3000 burn-in iterations
+Chain initialised with 10 clusters, then run through 4000 burn-in iterations
 before collecting 50 posterior samples with 50 iterations between each.
 }
 \keyword{datasets}

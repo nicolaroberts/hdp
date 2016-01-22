@@ -1,6 +1,14 @@
-#' Plot likelihood of HDP posterior sampling chain.
+#' Diagnostic plots for HDP posterior sampling chain
 #'
 #' @param chain A hdpSampleChain object
+#' @name plotchain
+#' @examples
+#' plot_lik(mut_example_chain, bty="L")
+#' plot_numcluster(mut_example_chain, bty="L")
+#' plot_data_assigned(mut_example_chain, bty="L")
+NULL
+#> NULL
+
 #' @param start The starting iteration to plot from (default 1)
 #' @param end The final iteration to plot to (default is end of chain)
 #' @param col_lik Plot colour of likelihood (default blue)
@@ -8,13 +16,8 @@
 #' @param xlab Horizontal axis label
 #' @param ylab Vertical axis label
 #' @param ... Other arguments to plot
-#' @seealso \code{\link{hdpSampleChain-class}}, \code{\link{plot_numcluster}},
-#'  \code{\link{plot_data_assigned}}
 #' @export
-#' @examples
-#' plot_lik(mut_example_chain, bty="L")
-#'
-
+#' @rdname plotchain
 plot_lik <- function(chain, start=1, end=length(lik(chain)),
                      col_lik="blue", col_burn="red",
                      xlab="Iteration", ylab="Likelihood", ...){
@@ -38,20 +41,9 @@ plot_lik <- function(chain, start=1, end=length(lik(chain)),
   abline(v=hdp_settings(chain)$burnin, col=col_burn, lty=2)
 }
 
-
-#' Plot number of raw clusters in each posterior sample from the chain
-#'
-#' @param chain A hdpSampleChain object
-#' @param col Plot colour (default blue)
-#' @param xlab Horizontal axis label
-#' @param ylab Vertical axis label
-#' @param ... Other arguments to plot
-#' @seealso \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},
-#'  \code{\link{plot_data_assigned}}
+#' @param col Plot colour for numcluster (default blue)
 #' @export
-#' @examples
-#' plot_numcluster(mut_example_chain, bty="L")
-#'
+#' @rdname plotchain
 plot_numcluster <- function(chain, col="blue", xlab="Sample",
                             ylab="Number of raw clusters", ...){
 
@@ -67,30 +59,11 @@ plot_numcluster <- function(chain, col="blue", xlab="Sample",
 }
 
 
-#' Plot proportion of data items assigned vs number of clusters
-#'
-#' Plot the cumulative proportion of data items assigned as the number of raw
-#' clusters increases (raw clusters sorted from largest to smallest).
-#' The horizontal axis extends as far as needed to explain 99.9\% of data
-#' items (on average).
-#' Each posterior sample is plotted separately, using a colour spectrum ranging from
-#' \code{col_early} to \code{col_late}. The average across posterior samples
-#' is plotted in black.
-#'
-#' @param chain A hdpSampleChain object
 #' @param legend Logical - should a legend be included? (default TRUE)
 #' @param col_early Color ramp side for early posterior samples
 #' @param col_late Color ramp side for late posterior samples
-#' @param xlab Horizontal axis label
-#' @param ylab Vertical axis label
-#' @param ... Other arguments to plot
-#' @seealso \code{\link{hdpSampleChain-class}}, \code{\link{plot_lik}},
-#'  \code{\link{plot_numcluster}}
 #' @export
-#' @examples
-#' plot_data_assigned(mut_example_chain, bty="L")
-#'
-
+#' @rdname plotchain
 plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
                                col_late="skyblue3",
                                xlab="Number of raw clusters",

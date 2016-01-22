@@ -50,7 +50,7 @@ NULL
 #' Data is derived from TCGA exome-sequencing studies.
 #' Each sample was assigned to a unique child DP node, with one parent DP node per
 #' cancer type, and one grandparent DP node at the top level.
-#' Chain initialised with 10 clusters, then run through 3000 burn-in iterations
+#' Chain initialised with 10 clusters, then run through 4000 burn-in iterations
 #' before collecting 50 posterior samples with 50 iterations between each.
 #'
 #' @format A hdpSampleChain object with 50 posterior samples
@@ -66,7 +66,7 @@ NULL
 #' Data is derived from TCGA exome-sequencing studies.
 #' Each sample was assigned to a unique child DP node, with one parent DP node per
 #' cancer type, and one grandparent DP node at the top level.
-#' Each chain initialised with 10 clusters, then run 3000 burn-in iterations
+#' Each chain initialised with 10 clusters, then run 4000 burn-in iterations
 #' before collecting 50 posterior samples with 50 iterations between each.
 #'
 #' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain

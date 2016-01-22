@@ -6,8 +6,7 @@
 #' (made available for posterior samplig). The base distribution is a uniform Dirichlet
 #' with psuedocount 1 in each data category. Can immediately run \code{\link{hdp_posterior}}
 #' to collect posterior samples.
-#' To define a custom HDP structure, see \code{\link{hdp_init}}, \code{\link{hdp_adddp}},
-#' and \code{\link{hdp_addconparam}}.
+#' To define a custom HDP structure, see \code{\link{hdp_init}} and \code{\link{hdp_prior_init}}.
 #'
 #' @param data A \code{data.frame} or \code{matrix} of counts with one row for every sample
 #'  and one column for every data category.
@@ -17,7 +16,7 @@
 #' @param alphab Rate hyperparameter for the gamma prior over the concentration parameter.
 
 #' @return A hdpState object with a basic default structure. See \code{\link{hdpState-class}}
-#' @seealso \code{\link{hdp_init}}, \code{\link{hdp_posterior}}
+#' @seealso \code{\link{hdp_init}}, \code{\link{hdp_posterior}}, \code{\link{hdp_prior_init}}
 #' @export
 #' @examples
 #' my_quick_hdp <- hdp_quick_init(example_data_hdp)

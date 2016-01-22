@@ -2,18 +2,19 @@
 % Please edit documentation in R/hdp_multi_chain.R
 \name{hdp_multi_chain}
 \alias{hdp_multi_chain}
-\title{Gather multiple independent posterior sampling chains from one HDP}
+\title{Gather multiple independent posterior sampling chains for the same HDP}
 \usage{
 hdp_multi_chain(chain_list)
 }
 \arguments{
-\item{chain_list}{A list of hdpSampleChain objects for the same data and HDP structure, but run with different random seeds.}
+\item{chain_list}{A list of hdpSampleChain objects for the same data and HDP
+structure, but run with different random seeds.}
 }
 \value{
 A hdpSampleMulti object
 }
 \description{
-Gather multiple independent posterior sampling chains from one HDP
+Gather multiple independent posterior sampling chains for the same HDP
 }
 \seealso{
 \code{\link{hdp_posterior}}

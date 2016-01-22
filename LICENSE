@@ -34,15 +34,19 @@
 #
 ################################################################################
 
-File: R/aaa-classes.R
+File: R/aaa-classes-input.R
 Copyright: 2015 Nicola D Roberts
 
 
-File: R/aaa-generics-components.R
+File: R/aaa-classes-output.R
 Copyright: 2015 Nicola D Roberts
 
 
-File: R/aaa-generics.R
+File: R/aaa-generics-input.R
+Copyright: 2015 Nicola D Roberts
+
+
+File: R/aaa-generics-output.R
 Copyright: 2015 Nicola D Roberts
 
 
@@ -106,6 +110,10 @@ Copyright: 2004 Yee Whye Teh
 Comment: Adapted from npbayesr21/hdpmix/hdp_posterior.m by Yee Whye Teh
 
 
+File: R/hdp_prior_init.R
+Copyright: 2015 Nicola D Roberts
+
+
 File: R/hdp_quick_init.R
 Copyright: 2015 Nicola D Roberts
 
@@ -130,24 +138,6 @@ File: R/plot_components.R
 Copyright: 2015 Nicola D Roberts
 
 
-File: R/qq_addclass.R
-Copyright: 2004 Yee Whye Teh
-           2015 Nicola D Roberts
-Comment: Adapted from npbayesr21/hdpmix/private/qq_addclass.m by Yee Whye Teh
-
-
-File: R/randnumtable.R
-Copyright: 2004 Yee Whye Teh
-           2015 Nicola D Roberts
-Comment: Adapted from npbayesr21/utilities/randnumtable.m by Yee Whye Teh
-
-
-File: R/randstick.R
-Copyright: 2004 Yee Whye Teh
-           2015 Nicola D Roberts
-Comment: Adapted from npbayesr21/utilities/randstick.m by Yee Whye Teh
-
-
 File: R/stirling.R
 Copyright: 2004 Yee Whye Teh
            2015 Nicola D Roberts
@@ -159,6 +149,13 @@ Copyright: 2004 Yee Whye Teh
            2015 Nicola D Roberts
 Comment: Adapted from npbayesr21/hdpmix/private/check*.m by Yee Whye Teh
 Comment: Adapted from npbayesr21/distributions/multinomial/Multinomial*.m by Yee Whye Teh
+Comment: Adapted from npbayesr21/hdpmix/private/qq_addclass.m by Yee Whye Teh
+Comment: Adapted from npbayesr21/utilities/randnumtable.m by Yee Whye Teh
+Comment: Adapted from npbayesr21/utilities/randstick.m by Yee Whye Teh
+
+
+File: R/utilities_nr3.R
+Copyright: 2015 Nicola D Roberts
 
 
 File: R/zzz.R

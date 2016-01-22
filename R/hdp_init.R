@@ -18,7 +18,8 @@
 #' @param alphaa Shape hyperparameters for the gamma priors over the DP concentration parameters.
 #' @param alphab Rate hyperparameters for the gamma priors over the DP concentration parameters.
 #' @return A hdpState object with the initial HDP structure. See \code{\link{hdpState-class}}
-#' @seealso \code{\link{hdp_quick_init}}, \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
+#' @seealso \code{\link{hdp_quick_init}}, \code{\link{hdp_prior_init}},
+#'  \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
 #'  \code{\link{hdp_setdata}}, \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 #' @export
 #' @examples
@@ -79,7 +80,8 @@ hdp_init <- function(ppindex, cpindex, hh, alphaa, alphab){
              cpindex       = as.integer(cpindex),
              ttindex       = as.integer(rep(0,numdp)),
              initcc        = as.integer(NULL),
-             seed_activate = as.integer(NULL)
+             seed_activate = as.integer(NULL),
+             pseudoDP      = as.integer(NULL)
              )
 
   # fill in ttindex slot

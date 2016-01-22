@@ -27,14 +27,13 @@ shares the same concentration parameter, and will automatically be 'activated'
 (made available for posterior samplig). The base distribution is a uniform Dirichlet
 with psuedocount 1 in each data category. Can immediately run \code{\link{hdp_posterior}}
 to collect posterior samples.
-To define a custom HDP structure, see \code{\link{hdp_init}}, \code{\link{hdp_adddp}},
-and \code{\link{hdp_addconparam}}.
+To define a custom HDP structure, see \code{\link{hdp_init}} and \code{\link{hdp_prior_init}}.
 }
 \examples{
 my_quick_hdp <- hdp_quick_init(example_data_hdp)
 my_quick_hdp_chain <- hdp_posterior(my_quick_hdp, 100, 50, 10, 5)
 }
 \seealso{
-\code{\link{hdp_init}}, \code{\link{hdp_posterior}}
+\code{\link{hdp_init}}, \code{\link{hdp_posterior}}, \code{\link{hdp_prior_init}}
 }
 

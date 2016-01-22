@@ -45,7 +45,8 @@ hdp_init(ppindex=0, cpindex=1, hh=rep(1, 6), alphaa=rep(1, 3), alphab=rep(2, 3))
 hdp_init(ppindex=c(0, 1, 1), cpindex=c(1, 2, 2), hh=rep(1, 6), alphaa=rep(2, 2), alphab=rep(0.5, 2))
 }
 \seealso{
-\code{\link{hdp_quick_init}}, \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
+\code{\link{hdp_quick_init}}, \code{\link{hdp_prior_init}},
+ \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
  \code{\link{hdp_setdata}}, \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 }
 
