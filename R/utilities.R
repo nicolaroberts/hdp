@@ -32,8 +32,8 @@ qq_addclass <- function(hdp,newclass){
 
   for (jj in 1:hdp@numdp){
     if (hdp@dpstate[jj] != HELDOUT){
-      hdp@dp[[jj]]@classnd[numcl+1] <- 0L
-      hdp@dp[[jj]]@classnt[numcl+1] <- 0L
+      hdp@dp[[jj]]@classnd[(oldcl+1):(numcl+1)] <- 0L
+      hdp@dp[[jj]]@classnt[(oldcl+1):(numcl+1)] <- 0L
     }
     if (hdp@dpstate[jj] == ACTIVE){
       hdp@dp[[jj]]@beta[(oldcl+1):(numcl+1)] <- hdp@dp[[jj]]@beta[oldcl+1] *
