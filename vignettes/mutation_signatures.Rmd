@@ -1,7 +1,7 @@
 ---
 title: "HDP for mutational signatures analysis"
 author: "Nicola Roberts"
-date: "October 6, 2015"
+date: "April 4, 2016"
 output: 
   BiocStyle::html_document:
     toc: true
@@ -150,6 +150,7 @@ p1 <- lapply(chains(mut_example_multi), plot_lik, bty="L", start=500)
 p2 <- lapply(chains(mut_example_multi), plot_numcluster, bty="L")
 p3 <- lapply(chains(mut_example_multi), plot_data_assigned, bty="L")
 ```
+.
 
 ## Extract components (mutational signatures)
 
@@ -166,10 +167,11 @@ sample are included. As a result, a fraction of the sample's signature
 exposure is left unexplained, as we can't have confidence that the other signatures 
 truly contribute to that sample. 
 
-```{r extractmulti, fig.width=8, fig.height=5}
+```{r extractmulti, fig.width=8, fig.height=5, fig.keep="all"}
 mut_example_multi <- hdp_extract_components(mut_example_multi)
 mut_example_multi
 
+par(mfrow=c(1,1), mar=c(5, 4, 4, 2))
 plot_comp_size(mut_example_multi, bty="L")
 
 bases <- c("A", "C", "G", "T")
@@ -178,11 +180,11 @@ trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
                          rep(bases, times=24))
 group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
                            each=16))
-
-plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
+for (i in 0:(length(comp_categ_counts(mut_example_multi)) -1)) {
+  print(plot_comp_distn(mut_example_multi, comp=i, cat_names=trinuc_context,
                  grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set1"),
-                 col_nonsig="grey80", show_group_labels=TRUE)
-
+                 col_nonsig="grey80", show_group_labels=TRUE))
+}
 
 plot_dp_comp_exposure(mut_example_multi, main_text="Lung adenocarcinoma",
                       dpindices=4+(1:100), 
@@ -281,10 +283,11 @@ lusc_multi
 
 plot_comp_size(lusc_multi, bty="L")
 
-plot_comp_distn(lusc_multi, cat_names=trinuc_context,
+for (i in 0:(length(comp_categ_counts(lusc_multi)) -1)) {
+  print(plot_comp_distn(lusc_multi, comp=i, cat_names=trinuc_context,
                  grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set1"),
-                 col_nonsig="grey80", show_group_labels=TRUE)
-
+                 col_nonsig="grey80", show_group_labels=TRUE))
+}
 
 plot_dp_comp_exposure(lusc_multi, main_text="Lung squamous",
                       dpindices=306:405, 
@@ -299,6 +302,46 @@ plot_dp_comp_exposure(lusc_multi,
                                 "Ovarian", "Melanoma"))
 
 ```
+
+. 
+
+
+# Example: lung squamous cell carcinoma, conditioned on signatures database
+
+Use `hdp_prior_init` to condition on previously identified signatures 
+(e.g. COSMIC database). 
+
+
+```{r prior}
+cosmic.sigs <- read.table('http://cancer.sanger.ac.uk/cancergenome/assets/signatures_probabilities.txt', header=TRUE, sep='\t')
+#  sort by Substitution Type and Trinucleotide
+cosmic.sigs <- cosmic.sigs[order(cosmic.sigs$Substitution.Type, cosmic.sigs$Trinucleotide),]
+sigs <- as.matrix(cosmic.sigs[,grep('Signature', colnames(cosmic.sigs))])
+prior_pseudoc <- rep(100, 30)
+lusc_prior <- hdp_prior_init(sigs, prior_pseudoc, hh=rep(1, 96),
+                             alphaa=c(1, 1), alphab=c(1, 2))
+
+lusc_prior <- hdp_addconparam(lusc_prior, c(1,1), c(1,1))
+lusc_prior <- hdp_adddp(lusc_prior, 101,
+                  ppindex=c(1, rep(1+30+1, 100)),
+                  cpindex=c(3, rep(4, 100)))
+lusc_prior <- hdp_setdata(lusc_prior, (1+30+1)+1:100, lusc_count)
+
+chlist <- vector("list", 4)
+for (i in 1:4){
+      lusc_pr <- dp_activate(lusc_prior, 
+                                       (1+30+1)+0:100, initcc=30)
+      chlist[[i]] <- hdp_posterior(lusc_pr, burnin=1500, n=50, 
+                               space=50, cpiter=3, seed=i*1e6)
+}
+
+lusc_pr_multi <- hdp_multi_chain(chlist)
+lusc_pr_ec <- hdp_extract_components(lusc_pr_multi)
+
+plot_dp_comp_exposure(lusc_pr_ec, 1+30+1+(1:100), incl_nonsig = FALSE,
+                      col=rep(nrmisc::nr_col_pal("bigpal", 29), 2))
+```
+
 
 # Session info
 
