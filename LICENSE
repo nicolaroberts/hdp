@@ -111,7 +111,7 @@ Comment: Adapted from npbayesr21/hdpmix/hdp_posterior.m by Yee Whye Teh
 
 
 File: R/hdp_prior_init.R
-Copyright: 2015 Nicola D Roberts
+Copyright: 2016 Nicola D Roberts
 
 
 File: R/hdp_quick_init.R

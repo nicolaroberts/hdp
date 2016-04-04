@@ -1,4 +1,4 @@
- hdp_extract_comp_single <- function(chain, cos.merge=0.90){
+hdp_extract_comp_single <- function(chain, cos.merge=0.90){
 
   # input checks
   if (class(chain) != "hdpSampleChain") {
@@ -42,22 +42,49 @@
   # Step (2)
   # Match up raw clusters (matrix columns) across posterior samples (columns not
   # guaranteed to keep same component through all samples)
+
+  # if priors, hold back those columns and just match the new clusters
+  if (is_prior){
+    ccc_hold <- lapply(ccc_1, function(x) as.matrix(x[,priorcc]))
+    ccc_1 <- lapply(ccc_1, function(x) as.matrix(x[,-priorcc]))
+  }
+
   # K-centroids clustering of all raw clusters with cannot-link constraints
   # within each posterior sample, Manhattan distance and median centroid
-  ccc_unlist <- t(do.call(cbind, ccc_1))
-  groupfactor <- rep(1:nsamp, each=maxclust)
-  initial_clust <- rep(1:maxclust, times=nsamp)
+  mclust <- ncol(ccc_1[[1]])
 
-  ccc_clust <- flexclust::kcca(ccc_unlist, k=initial_clust,
-                           group=groupfactor,
-                           family=flexclust::kccaFamily("kmedians",
-                                             groupFun="differentClusters"))
+  if (mclust==1){
+    ccc_label <- rep(1, length(ccc_1))
 
-  # want this plot to be as simple as possible
-  # tmp <- matrix(flexclust::clusters(ccc_clust), byrow=T, ncol=maxclust)
-  # matplot(tmp, type='l', lty=1, main="kmedians")
+  } else{
+    ccc_unlist <- t(do.call(cbind, ccc_1))
+    groupfactor <- rep(1:nsamp, each=mclust)
+    initial_clust <- rep(1:mclust, times=nsamp)
 
-  ccc_label <- split(flexclust::clusters(ccc_clust), groupfactor)
+    ccc_clust <- flexclust::kcca(ccc_unlist, k=initial_clust,
+                               group=groupfactor,
+                               family=flexclust::kccaFamily("kmedians",
+                                                groupFun="differentClusters"))
+
+    # want this plot to be as simple as possible
+    # tmp <- matrix(flexclust::clusters(ccc_clust), byrow=T, ncol=mclust)
+    # matplot(tmp, type='l', lty=1, main="kmedians")
+
+    ccc_label <- split(flexclust::clusters(ccc_clust), groupfactor)
+
+    remove(ccc_unlist, groupfactor, initial_clust, ccc_clust)
+
+    }
+
+
+  if(is_prior){
+    ccc_label <- lapply(ccc_label, `+`, max(priorcc))
+    ccc_label <- lapply(ccc_label, function(x) c(priorcc, x))
+
+    ccc_1 <- mapply(cbind, ccc_hold, ccc_1, SIMPLIFY = FALSE)
+
+    remove(ccc_hold)
+  }
 
   ccc_2 <- mapply(function(ccc, label) {
     colnames(ccc) <- label
@@ -71,7 +98,7 @@
     },
                   cdc_1, ccc_label, SIMPLIFY=FALSE)
 
-  remove(ccc_1, cdc_1, ccc_unlist, groupfactor, initial_clust, ccc_clust, ccc_label)
+  remove(ccc_1, cdc_1, ccc_label)
 
   # Step (3)
   # Merge the ccc columns with high cosine similarity.
@@ -83,6 +110,15 @@
   clust_cos <- lsa::cosine(avgdistn)
   clust_same <- (clust_cos > cos.merge & lower.tri(clust_cos))
   same <- which(clust_same, arr.ind=TRUE) # merge these columns
+
+  # if priors, do not merge two prior clusters
+  if (is_prior){
+    if (length(same)>0) {
+      ignore <- which(apply(same, 1, function(x) all(x %in% priorcc)))
+      same <- same[-ignore,]
+    }
+  }
+
   # update clust_label vector to reflect the merging of columns.
   if (length(same)>0){
     for (i in 1:nrow(same)){
@@ -106,7 +142,7 @@
     compii <- sapply(ccc_3, function(x) x[,ii])
     lowerb <- apply(compii, 1, function(y) {
                 samp <- coda::as.mcmc(y)
-                if (sum(!is.nan(samp)) ==  1) {
+                if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
                   NaN
                 } else {
                   round(coda::HPDinterval(samp)[1], 3)
@@ -114,6 +150,12 @@
               })
     if(any(lowerb>0)) use_clust <- c(use_clust, colnames(ccc_3[[1]])[ii])
   }
+
+  # if priors, must include them all
+  if(is_prior){
+    use_clust <- union(use_clust, as.character(priorcc))
+  }
+
   # update clust_label vector
   clust_label[which(!clust_label %in% use_clust)] <- 0
   ccc_4 <- lapply(ccc_3, merge_cols, clust_label)
@@ -132,7 +174,7 @@
     compii <- sapply(cdc_4, function(x) x[,ii])
     lowerb <- apply(compii[-disregard,], 1, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         NaN
       } else {
         round(coda::HPDinterval(samp)[1], 3)
@@ -140,6 +182,12 @@
     })
     if(any(lowerb>0)) use_clust <- c(use_clust, colnames(cdc_4[[1]])[ii])
   }
+
+  # if prior sigs, must include them all
+  if(is_prior){
+    use_clust <- union(use_clust, as.character(priorcc))
+  }
+
   # update clust_label vector
   clust_label[which(!clust_label %in% use_clust)] <- 0
   ccc_5 <- lapply(ccc_4, merge_cols, clust_label)
@@ -152,18 +200,41 @@
   # Step (6)
   # Rename overall component, order by number of data items (on average)
   # 0th component still goes first
+
   avg_ndi <- rowMeans(sapply(ccc_5, colSums))
   colorder <- c(1, setdiff(order(avg_ndi, decreasing=T), 1))
 
   ccc_6 <- lapply(ccc_5, function(x) {
+    if (is_prior) {
+      colnames(x) <- c("0", paste0("P", priorcc),
+                       paste0("N", 1:(ncol(x)-length(priorcc)-1)))[1:ncol(x)]
+    }
     x <- x[, colorder]
-    colnames(x) <- 0:(ncol(x)-1)
+    if (is_prior){
+      update <- which(grepl("N", colnames(x)))
+      if (length(update)>0){
+        colnames(x)[update] <- paste0("N", 1:length(update))
+      }
+    } else {
+      colnames(x) <- 0:(ncol(x)-1)
+    }
     return(x)
   })
 
   cdc_6 <- lapply(cdc_5, function(x) {
+    if (is_prior) {
+      colnames(x) <- c("0", paste0("P", priorcc),
+                       paste0("N", 1:(ncol(x)-length(priorcc)-1)))[1:ncol(x)]
+    }
     x <- x[, colorder]
-    colnames(x) <- 0:(ncol(x)-1)
+    if (is_prior){
+      update <- which(grepl("N", colnames(x)))
+      if (length(update)>0){
+        colnames(x)[update] <- paste0("N", 1:length(update))
+      }
+    } else {
+      colnames(x) <- 0:(ncol(x)-1)
+    }
     return(x)
   })
 
@@ -175,10 +246,27 @@
 
   # Step (7)
   # Convert ccc into list of length ncomp, with matrices nsamp*ncat
+
+  # if prior sigs, remove pseudo data from ccc
+  if (is_prior){
+    pseudodata <- sapply(dp(final_hdpState(chain))[pseudo],
+                         function(x) table(factor(x@datass, levels=1:ncat)))
+    colnames(pseudodata) <- paste0("P", 1:ncol(pseudodata))
+
+    cn <- colnames(ccc_6[[1]])
+    cnp <- which(grepl("P", cn))
+
+    ccc_6 <- lapply(ccc_6, function(x) {
+      x[,cnp] <- x[,cnp] - pseudodata[,cn[cnp]]
+      return(x)
+    })
+  }
+
   ccc_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncat)), ncomp)
   for (i in 1:ncomp){
     ccc_ans[[i]] <- t(sapply(ccc_6, function(x) x[, i]))
   }
+  names(ccc_ans) <- colnames(ccc_6[[1]])
 
   # Convert cdc into list of length ndp, with matrices nsamp*ncomp
   cdc_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncomp)), ndp)
@@ -188,26 +276,23 @@
 
   remove(ccc_6, cdc_6)
 
-
   # Step (8)
   # Calculate mean and 95% credibility interval for each component's
   # categorical data distribution
   ccc_norm <- lapply(ccc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
   ccc_mean <- t(sapply(ccc_norm, colMeans, na.rm=TRUE))
-  rownames(ccc_mean) <- 0:(ncomp-1)
 
   ccc_credint <- lapply(ccc_norm, function(x) {
     apply(x, 2, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
           c(NaN, NaN)
       } else {
           round(coda::HPDinterval(samp), 3)
       }
     })
   })
-  names(ccc_credint) <- 0:(ncomp-1)
 
   # Step (8)
   # Calculate mean and 95% credibility interval for each DP's
@@ -219,7 +304,7 @@
   cdc_credint <- lapply(cdc_norm, function(x) {
     apply(x, 2, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         c(NaN, NaN)
       } else {
         round(coda::HPDinterval(samp), 3)

@@ -63,8 +63,9 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
     legtext <- c("First chain", "Last chain")
   }
 
-  plot(x=jitter(rep(0:(nrow(sums)-1), ncol(sums))), xlab=xlab,
+  plot(x=jitter(rep(0:(nrow(sums)-1), ncol(sums))), xlab=xlab, xaxt="n",
        y=as.vector(sums), pch=1, col=mycols, ylab=ylab, ...)
+  axis(1, at=0:(nrow(sums)-1), labels=rownames(sums))
 
   if (legend) {
     legend("topright", col=c(col_a, col_b), pch=1, legend=legtext, bty="n")
@@ -140,9 +141,9 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
 
   # which components to plot
   if (is.null(comp)){
-    comp_to_plot <- 0:ncomp
+    comp_to_plot <- rownames(comp_distn$mean)
   } else {
-    comp_to_plot <- comp
+    comp_to_plot <- rownames(comp_distn$mean)[comp+1]
   }
 
   if(!class(plot_title) %in% c("character", "NULL") |
@@ -164,10 +165,13 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
   }
   names(plot_title) <- comp_to_plot
 
-  for (ii in comp_to_plot){
+  for (ii in seq_along(comp_to_plot)){
+
+    cname <- comp_to_plot[ii]
+
     # mean categorical distribution (sig), and credibility interval
-    sig <- comp_distn$mean[as.character(ii),]
-    ci <- comp_distn$cred.int[[as.character(ii)]]
+    sig <- comp_distn$mean[cname,]
+    ci <- comp_distn$cred.int[[cname]]
 
     # adjust categories by weights if specified (lose cred intervals though)
     if(!is.null(weights)){
@@ -191,7 +195,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
     # main barplot
     b <- barplot(sig, col=cat_cols_copy, xaxt="n", ylim=c(0,plottop*1.1),
                  border=NA, names.arg=rep("", ncat), xpd=F, las=1,
-                 main=plot_title[as.character(ii)], ...)
+                 main=plot_title[ii], ...)
 
     # add credibility intervals
     if (cred_int & !is.null(ci)){
@@ -312,6 +316,11 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
 
   # mean exposures
   exposures <- t(dp_distn$mean[dpindices,])
+  if (nrow(exposures)==1) {
+    dim(exposures) <- rev(dim(exposures))
+    rownames(exposures) <- colnames(dp_distn$mean)
+    }
+
 
   # only include significantly non-zero exposures
   if (!incl_nonsig){
@@ -349,7 +358,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
     par(cex.axis=cex.axis, las=2)
     # don't understand why legend.text needs rev() here and not in above case,
     # but seems to work?
-    barplot(exposures[inc, dp_order], space=0, col=col_comp[inc],
+    barplot(as.matrix(exposures[inc, dp_order]), space=0, col=col_comp[inc],
             border=NA, ylim=c(0, 1),
             xlim=c(0, length(dpindices) + num_leg_col + 1),
             names.arg=dpnames[dp_order],

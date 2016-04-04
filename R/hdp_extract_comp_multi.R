@@ -26,6 +26,9 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   ndp <- numdp(final_hdpState(chlist[[1]]))
   nsamp <- sapply(chlist, function(x) hdp_settings(x)$n)
   numdata <- sapply(dp(final_hdpState(chlist[[1]])), numdata)
+  pseudo <- pseudoDP(final_hdpState(chlist[[1]]))
+  is_prior <- length(pseudo) > 0
+  numprior <- length(pseudo)
 
   remove(i)
 
@@ -42,14 +45,32 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   remove(ccc_0)
 
-  # K-centroids clustering of all components across chains
+  # if priors, they will be 1:numprior in order of name
+  if (is_prior){
+    pr_pos <- lapply(ccc_1, function(mat){
+      sapply(paste0("P", 1:numprior), function(cn){
+        which(colnames(mat)==cn)})
+    })
+    comp_mapping <- rep(list(rep(0, maxcomp)), nch)
+    comp_mapping <- mapply(function(x, y){x[y] <- 1:length(y); return(x)},
+                           comp_mapping, pr_pos, SIMPLIFY=FALSE)
+  }
+
+  # K-centroids clustering of components across chains
   # with cannot-link constraints within each chain.
   # Manhattan distance and median centroid.
-  # exclude component 0 from each chain before matching
-  ccc_1_no0 <- lapply(ccc_1, function(x) x[,-1])
-  ccc_unlist <- t(do.call(cbind, ccc_1_no0))
-  groupfactor <- rep(1:nch, each=maxcomp-1)
-  initial_clust <- rep(1:(maxcomp-1), times=nch)
+  # exclude component 0 (and any priors) from each chain before matching
+  if (is_prior){
+    ccc_1_toclust <- mapply(function(mat, priors) {mat[,-c(1,priors)]},
+                            ccc_1, pr_pos, SIMPLIFY=FALSE)
+  } else {
+    ccc_1_toclust <- lapply(ccc_1, function(mat) mat[,-1])
+  }
+
+  mclust <- ncol(ccc_1_toclust[[1]])
+  ccc_unlist <- t(do.call(cbind, ccc_1_toclust))
+  groupfactor <- rep(1:nch, each=mclust)
+  initial_clust <- rep(1:mclust, times=nch)
 
   ccc_clust <- flexclust::kcca(ccc_unlist, k=initial_clust,
                                group=groupfactor,
@@ -57,13 +78,20 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
                                                     groupFun="differentClusters"))
 
   # want this plot to be as simple as possible
-  # tmp <- matrix(flexclust::clusters(ccc_clust), byrow=T, ncol=maxcomp-1)
+  # tmp <- matrix(flexclust::clusters(ccc_clust), byrow=T, ncol=mclust)
   # matplot(tmp, type='l', lty=1, main="kmedians")
 
-  comp_mapping <- split(flexclust::clusters(ccc_clust), groupfactor)
-  comp_mapping <- lapply(comp_mapping, function(x) c(0, x))
+  clust_map <- split(flexclust::clusters(ccc_clust), groupfactor)
 
-  remove(ccc_1, ccc_1_no0, ccc_unlist, groupfactor, initial_clust, ccc_clust)
+  if (is_prior){
+    comp_mapping <- mapply(function(map, otherpos, vals){map[-c(1, otherpos)] <- vals+numprior; return(map)},
+           comp_mapping, pr_pos, clust_map, SIMPLIFY = FALSE)
+  } else {
+    comp_mapping <- lapply(clust_map, function(x) c(0, x))
+  }
+
+  remove(ccc_1, ccc_1_toclust, ccc_unlist, groupfactor, initial_clust,
+         ccc_clust, clust_map, mclust)
 
   # Step (2) Consolidate all ccc and cdc stats from all chains
   # Get comp_categ_counts list for each chain,
@@ -112,13 +140,21 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   # Step (3)
   # Merge components with high cosine similarity in ccc
+
   avgdistn <- sapply(ccc_2, function(x) colMeans(x)/sum(colMeans(x)))
   clust_cos <- lsa::cosine(avgdistn)
   clust_same <- (clust_cos > cos.merge & lower.tri(clust_cos))
   same <- which(clust_same, arr.ind=TRUE) # merge these
 
-  # how best to track and update components??
-  # update clust_label vector to reflect the merging of columns.
+  # if priors, do not merge two prior clusters
+  if (is_prior){
+    if (length(same)>0) {
+      ignore <- which(apply(same, 1, function(x) all(x %in% 1:numprior)))
+      same <- same[-ignore,]
+    }
+  }
+
+  # update comp_label vector to reflect the merging of columns.
   if (length(same)>0){
     for (i in 1:nrow(same)){
       comp_label[same[i, 1]] <- comp_label[same[i, 2]]
@@ -133,15 +169,15 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   comp_label <- names(ccc_3)
   if (any(comp_label != colnames(cdc_3))) stop("problem in step 3!")
 
-
   # Step (4)
   # Assign components with no *significantly* non-zero data categories
   # to component '0'
+
   use_comp <- c()
   for (ii in 1:length(ccc_3)) {
     lowerb <- apply(ccc_3[[ii]], 2, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         NaN
       } else {
         round(coda::HPDinterval(samp)[1], 3)
@@ -149,7 +185,13 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
     })
     if(any(lowerb>0)) use_comp <- c(use_comp, names(ccc_3)[ii])
   }
-  # update clust_label vector
+
+  # if priors, must include them all
+  if(is_prior){
+    use_comp <- union(use_comp, as.character(1:numprior))
+  }
+
+  # update comp_label vector
   comp_label[which(!comp_label %in% use_comp)] <- 0
   ccc_4 <- merge_elems(ccc_3, comp_label)
   cdc_4 <- lapply(cdc_3, merge_cols, comp_label)
@@ -162,13 +204,14 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   # Step (5)
   # Assign components with no *significantly* non-zero sample exposure
   # to component '0' (disregarding DP nodes with no data items (parent nodes))
+
   use_comp <- c()
   disregard <- which(numdata==0)
   for (ii in 1:ncol(cdc_4[[1]])) {
     compii <- t(sapply(cdc_4, function(x) x[,ii]))
     lowerb <- apply(compii[-disregard,], 1, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         NaN
       } else {
         round(coda::HPDinterval(samp)[1], 3)
@@ -176,6 +219,12 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
     })
     if(any(lowerb>0)) use_comp <- c(use_comp, colnames(cdc_4[[1]])[ii])
   }
+
+  # if prior sigs, must include them all
+  if(is_prior){
+    use_comp <- union(use_comp, as.character(1:numprior))
+  }
+
   # update comp_label vector
   comp_label[which(!comp_label %in% use_comp)] <- 0
   ccc_5 <- merge_elems(ccc_4, comp_label)
@@ -192,19 +241,31 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   avg_ndi <- sapply(ccc_5, function(x) mean(rowSums(x)))
   comporder <- c(1, setdiff(order(avg_ndi, decreasing=T), 1))
 
-  ccc_ans <- ccc_5[comporder]
-  names(ccc_ans) <- 0:(length(ccc_ans)-1)
-
-  cdc_ans <- lapply(cdc_5, function(x) {
-    x <- x[, comporder]
-    colnames(x) <- 0:(ncol(x)-1)
-    return(x)
-  })
-
   # number of components
   ncomp <- length(comporder)
 
-  remove(ccc_5, cdc_5, avg_ndi, comporder)
+  if (is_prior) {
+    compnames <- c("0", paste0("P", 1:numprior),
+                  paste0("N", 1:(ncomp-numprior-1)))[1:ncomp]
+    compnames <- compnames[comporder]
+    update <- which(grepl("N", compnames))
+    if (length(update)>0){
+      compnames[update] <- paste0("N", 1:length(update))
+    }
+  } else {
+    compnames <- 0:(ncomp-1)
+  }
+
+  ccc_ans <- ccc_5[comporder]
+  names(ccc_ans) <- compnames
+
+  cdc_ans <- lapply(cdc_5, function(x) {
+    x <- x[, comporder]
+    colnames(x) <- compnames
+    return(x)
+  })
+
+  remove(ccc_5, cdc_5, avg_ndi, comporder, compnames)
 
 
   # Step (7)
@@ -213,19 +274,17 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   ccc_norm <- lapply(ccc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
   ccc_mean <- t(sapply(ccc_norm, colMeans, na.rm=TRUE))
-  rownames(ccc_mean) <- 0:(ncomp-1)
 
   ccc_credint <- lapply(ccc_norm, function(x) {
     apply(x, 2, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         c(NaN, NaN)
       } else {
         round(coda::HPDinterval(samp), 3)
       }
     })
   })
-  names(ccc_credint) <- 0:(ncomp-1)
 
   # Calculate mean and 95% credibility interval for each DP's
   # distribution over components (counts)
@@ -236,7 +295,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   cdc_credint <- lapply(cdc_norm, function(x) {
     apply(x, 2, function(y) {
       samp <- coda::as.mcmc(y)
-      if (sum(!is.nan(samp)) ==  1) {
+      if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         c(NaN, NaN)
       } else {
         round(coda::HPDinterval(samp), 3)

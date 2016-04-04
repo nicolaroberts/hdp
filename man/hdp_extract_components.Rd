@@ -26,7 +26,9 @@ will be re-calculated. Only used for hdpSampleMulti.}
 A hdpSampleChain or hdpSampleMulti object updated with component information
 }
 \description{
-Extract major components from the raw clusters
+If prior components included via \code{\link{hdp_prior_init}}, they will be
+preserved by \code{hdp_extract_components} and prefixed with "P".
+Any new components in this case are prefixed with "N".
 }
 \section{Methods (by class)}{
 \itemize{
