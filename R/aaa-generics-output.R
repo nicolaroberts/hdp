@@ -386,6 +386,11 @@ setMethod("comp_dp_distn",
 # Component extraction --------------
 
 #' Extract major components from the raw clusters
+#'
+#' If prior components included via \code{\link{hdp_prior_init}}, they will be
+#' preserved by \code{hdp_extract_components} and prefixed with "P".
+#' Any new components in this case are prefixed with "N".
+#'
 #' @param x hdpSampleChain or hdpSampleMulti object
 #' @param cos.merge Merge components with cosine similarity above this threshold (default 0.90)
 #' @param redo Logical. If true - constituent chains with previously calculated components
