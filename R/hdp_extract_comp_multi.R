@@ -68,30 +68,34 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   }
 
   mclust <- ncol(ccc_1_toclust[[1]])
-  ccc_unlist <- t(do.call(cbind, ccc_1_toclust))
-  groupfactor <- rep(1:nch, each=mclust)
-  initial_clust <- rep(1:mclust, times=nch)
 
-  ccc_clust <- flexclust::kcca(ccc_unlist, k=initial_clust,
-                               group=groupfactor,
-                               family=flexclust::kccaFamily("kmedians",
-                                                    groupFun="differentClusters"))
+  if (mclust!=0) {
+    ccc_unlist <- t(do.call(cbind, ccc_1_toclust))
+    groupfactor <- rep(1:nch, each=mclust)
+    initial_clust <- rep(1:mclust, times=nch)
 
-  # want this plot to be as simple as possible
-  # tmp <- matrix(flexclust::clusters(ccc_clust), byrow=T, ncol=mclust)
-  # matplot(tmp, type='l', lty=1, main="kmedians")
+    ccc_clust <- flexclust::kcca(ccc_unlist, k=initial_clust,
+                                 group=groupfactor,
+                                 family=flexclust::kccaFamily("kmedians",
+                                                              groupFun="differentClusters"))
 
-  clust_map <- split(flexclust::clusters(ccc_clust), groupfactor)
+    # want this plot to be as simple as possible
+    # tmp <- matrix(flexclust::clusters(ccc_clust), byrow=T, ncol=mclust)
+    # matplot(tmp, type='l', lty=1, main="kmedians")
 
-  if (is_prior){
-    comp_mapping <- mapply(function(map, otherpos, vals){map[-c(1, otherpos)] <- vals+numprior; return(map)},
-           comp_mapping, pr_pos, clust_map, SIMPLIFY = FALSE)
-  } else {
-    comp_mapping <- lapply(clust_map, function(x) c(0, x))
+    clust_map <- split(flexclust::clusters(ccc_clust), groupfactor)
+
+    if (is_prior){
+      comp_mapping <- mapply(function(map, otherpos, vals){map[-c(1, otherpos)] <- vals+numprior; return(map)},
+                             comp_mapping, pr_pos, clust_map, SIMPLIFY = FALSE)
+    } else {
+      comp_mapping <- lapply(clust_map, function(x) c(0, x))
+    }
+
+    remove(ccc_1, ccc_1_toclust, ccc_unlist, groupfactor, initial_clust,
+           ccc_clust, clust_map, mclust)
   }
 
-  remove(ccc_1, ccc_1_toclust, ccc_unlist, groupfactor, initial_clust,
-         ccc_clust, clust_map, mclust)
 
   # Step (2) Consolidate all ccc and cdc stats from all chains
   # Get comp_categ_counts list for each chain,
