@@ -15,6 +15,28 @@ NULL
 #' @format A numeric count matrix with 10 rows and 6 columns
 "example_data_hdp"
 
+
+#' Fake categorical count data with priors
+#'
+#' Fake categorical count data with 100 samples and 10 categories.
+#' Generated from four underlying categorical data distributions.
+#' Two of the underlying components are available as known prios
+#' in \code{\link{example_known_priors}}.
+#'
+#' @format A numeric count matrix with 100 rows and 10 columns
+"example_data_hdp_prior"
+
+
+#' Example known priors
+#'
+#' Two example prior components for the example data
+#' \code{\link{example_data_hdp_prior}}. 10 rows (one per data category) and
+#' 2 columns (one per prior component, each sums to 1).
+#'
+#' @format A numeric matrix with 10 rows and 2 columns.
+"example_known_priors"
+
+
 #' Cancer mutation count data
 #'
 #' Mutation count data from SomaticCancerAlterations package.
