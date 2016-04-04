@@ -1,7 +1,7 @@
 ---
 title: "General introduction to the hdp package"
 author: "Nicola Roberts"
-date: "October 6, 2015"
+date: "April 4, 2016"
 output: 
   BiocStyle::html_document: 
     toc: true
@@ -84,7 +84,7 @@ quick_hdp
 `hdp_quick_init()` returns a `hdpState` object. Notice that it has 11 DP nodes (one parent, and one 
 for each of 10 samples), and that the index of the parent node is 0 for the first DP 
 (the parent is the top node) and 1 for the others. The first DP node (the parent) has no associated 
-data items, while the second DP node has 598 (first sample), the third has 71 (second sample) and so on. 
+data items, while the second DP node has 103 (first sample), the third has 129 (second sample) and so on. 
 With the default settings, the number of initial clusters is 2, and the hyperparameters
 for the concentration parameter are both 1.
 
@@ -158,8 +158,9 @@ consolidated into components (constant number across posterior samples).
 For a `hdpSampleChain` object, the `hdp_extract_components()` function matches up
 the clusters across posterior samples and groups them into components such that:
 
-* at least `prop.ex` proportion of data items are assigned to a component (default 0.97), and
-* components are merged if their cosine similarity is above `cos.merge` (default 0.90).
+* clusters are merged if their cosine similarity is above `cos.merge` (default 0.90), and
+* clusters are assigned to component zero if they have no significant data categories
+  or sample exposure. 
 
 ```{r extract_single}
 quick_chain_v2 <- hdp_extract_components(quick_chain_v2)
@@ -167,7 +168,7 @@ quick_chain_v2
 ```
 
 Note that `quick_chain_v2` now includes component information, using two components
-to explain at least 97% of the dataset. 
+to explain 95.2% of the data. 
 
 The following plot shows the number of data items assigned to each component 
 in each posterior sample.
@@ -311,11 +312,6 @@ by dropping some initial samples
 
 For a `hdpSampleMulti` object, the `hdp_extract_components()` function matches
 clusters across posterior samples and chains, and groups them into components. 
-Unlike the method for a `hdpSampleChain` object, there is no need
-to specify the `prop.ex` argument for proportion of dataset to explain. 
-Rather, components are only included in the output if they have a consistent categorical
-distribution in all consituent sampling chains, and the resulting proportion of the 
-data explained by these robustly identifiable components is reported in the output. 
 Recall that data items not assigned to the main components are
 captured by the 'zero component' for noise and uncertainty. 
 
@@ -339,8 +335,39 @@ plot_dp_comp_exposure(multi, dpindices=9:13, main_text="Last five samples",
 
 Note that this custom HDP structure incorporated the prior knowledge that the first
 and last set of five samples were separate groups with different distributions over the
-two underlying shared components. This design returned the two components more accurately
-than the simple HDP structure in the first example. 
+two underlying shared components.
+
+# Conditioning on prior knowledge
+
+To condition on prior knowledge about possible components (underlying catagorical data distributions), 
+use `hdp_prior_init` to initialise a `hdpState` object with one top
+parent DP node (active) with no associated data, and one child DP node (frozen) per prior component. The frozen nodes signifying prior components 
+contain some number of pseudo-data items - use these pseudocounts to specify the relative weighting of each prior component compared to the volume of observed data. 
+
+In the following example, a toy dataset of 100 samples and 10 data categories was simulated from four underlying components. Two of these 
+underlying components are provided and input as prior information with
+a pseudocount weighting of 1000 data items each. 
+
+Prior components are preserved by `hdp_extract_components` and are prefixed with "P". Any new components identified are prefixed with "N". 
+
+
+```{r prior}
+example_known_priors
+hdp <- hdp_prior_init(example_known_priors, rep(1000, 2), hh=rep(1, 10),
+             alphaa=c(1,1), alphab=c(1,1))
+hdp <- hdp_addconparam(hdp, alphaa=c(1,1), alphab=c(1,1))
+hdp <- hdp_adddp(hdp, 101, c(1, rep(4, 100)), c(3, rep(4, 100)))
+hdp <- hdp_setdata(hdp, 5:104, example_data_hdp_prior)
+hdp <- dp_activate(hdp, 4:104, initcc=4, seed=81479)
+hdp <- hdp_posterior(hdp, burnin=2000, n=50, space=50, cpiter=3, seed=1e6)
+hdp_ex <- hdp_extract_components(hdp)
+plot_comp_size(hdp_ex, bty="L")
+par(mfrow=c(2,3))
+plot_comp_distn(hdp_ex)
+par(mfrow=c(1,1))
+plot_dp_comp_exposure(hdp_ex, 5:104, col_comp=rainbow(5))
+```
+
 
 
 # Access internal details of hdp object classes
@@ -362,6 +389,9 @@ numconparam(quick_hdp)
 # 'base' distribution above the top DP node
 base(quick_hdp)
 
+# parameters of 'base' distribution above top DP node
+base_params(quick_hdp)
+
 # concentration parameter details
 conparam(quick_hdp)
 
@@ -380,6 +410,13 @@ ppindex(quick_hdp)
 # index of concentration parameter for each node
 cpindex(quick_hdp)
 
+# seed used when activating nodes (initialising cluster assignments)
+activating_seed(quick_hdp)
+
+# index of frozen nodes containing psuedo-data for prior components,
+# only used if initialised via hdp_prior_init
+# pseudoDP()
+
 ```
 
 For documentation on `hdpSampleChain` objects, see `class?hdpSampleChain`. Some slots of `hdpSampleChain` 
@@ -388,7 +425,7 @@ can be accessed like so:
 ```{r hdpsamplechain}
 
 # random seed
-hdp_seed(quick_chain)
+sampling_seed(quick_chain)
 
 # settings of the posterior sampling chain
 hdp_settings(quick_chain)
@@ -432,6 +469,13 @@ Accessors for the component summary stats are the same for `hdpSampleChain`
 and `hdpSampleMulti` objects. 
 
 ```{r comp_access}
+
+# Number of components extracted (not including comp zero)
+numcomp(multi)
+
+# Propertion of data assigned to main components (not comp zero)
+prop.ex(multi)
+
 # List of matrices (one for each component) counting the sample-category data 
 # assignment across all DP nodes. Number of rows is the number of posterior samples, 
 # and number of columns is the number of data categories.
