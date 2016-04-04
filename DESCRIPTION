@@ -1,12 +1,12 @@
 Package: hdp
 Title: Hierarchical Dirichlet Process for categorical count data
-Version: 0.0.4
+Version: 0.1.0
 Authors@R: c(person("Nicola", "Roberts",
   email="nr3@sanger.ac.uk", role=c("aut", "cre")),
   person("Yee Whye", "Teh", role=c("aut", "cph"),
   comment="MATLAB and C original, http://www.stats.ox.ac.uk/~teh/research/npbayes/npbayes-r21.tgz"))
 Depends:
-    R(>= 3.1)
+    R(>= 3.2)
 Imports:
     lsa,
     methods,
@@ -38,11 +38,12 @@ Suggests:
     BiocStyle,
     devtools
 Collate:
-    'aaa-classes.R'
-    'hdp_extract_comp_single.R'
+    'aaa-classes-input.R'
+    'aaa-classes-output.R'
+    'aaa-generics-input.R'
     'hdp_extract_comp_multi.R'
-    'aaa-generics-components.R'
-    'aaa-generics.R'
+    'hdp_extract_comp_single.R'
+    'aaa-generics-output.R'
     'cull_posterior_samples.R'
     'dp_activate.R'
     'dp_freeze.R'
@@ -53,15 +54,15 @@ Collate:
     'hdp_init.R'
     'hdp_multi_chain.R'
     'hdp_posterior.R'
+    'hdp_prior_init.R'
     'hdp_quick_init.R'
     'hdp_setdata.R'
     'iterate.R'
     'plot_chain.R'
     'plot_components.R'
-    'qq_addclass.R'
-    'randnumtable.R'
-    'randstick.R'
     'stirling.R'
     'utilities.R'
+    'utilities_nr3.R'
     'zzz.R'
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
