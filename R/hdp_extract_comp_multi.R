@@ -154,7 +154,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   if (is_prior){
     if (length(same)>0) {
       ignore <- which(apply(same, 1, function(x) all(x %in% 1:numprior)))
-      same <- same[-ignore,]
+      same <- matrix(same[-ignore,], ncol=2)
     }
   }
 
