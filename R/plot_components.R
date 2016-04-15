@@ -350,7 +350,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
             args.legend=list(fill=col_comp[inc], bty="n", title=leg.title,
                              ncol=num_leg_col), ...)
 
-    barplot(exposures[inc, dp_order], space=0, col=col_comp[inc], border=NA,
+    barplot(as.matrix(exposures[inc, dp_order]), space=0, col=col_comp[inc], border=NA,
             ylim=c(0, 1), names.arg=dpnames[dp_order], ylab=ylab_exp,
             cex.names=cex.names, ...)
   } else {
