@@ -41,4 +41,3 @@ hdp_example
 \code{\link{hdp_init}}, \code{\link{hdp_setdata}},
  \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 }
-

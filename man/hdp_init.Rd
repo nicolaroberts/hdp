@@ -49,4 +49,3 @@ hdp_init(ppindex=c(0, 1, 1), cpindex=c(1, 2, 2), hh=rep(1, 6), alphaa=rep(2, 2),
  \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
  \code{\link{hdp_setdata}}, \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 }
-

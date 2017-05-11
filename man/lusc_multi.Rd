@@ -19,4 +19,3 @@ node 305 is the parent node for the LUSC samples,
 and nodes 306:405 hold the data for the 100 new LUSC samples.
 }
 \keyword{datasets}
-

@@ -2,17 +2,17 @@
 % Please edit documentation in R/aaa-classes-output.R, R/aaa-generics-output.R
 \docType{class}
 \name{hdpSampleMulti-class}
-\alias{as.list,hdpSampleMulti-method}
-\alias{chains}
-\alias{chains,hdpSampleMulti-method}
-\alias{comp_categ_counts,hdpSampleMulti-method}
-\alias{comp_categ_distn,hdpSampleMulti-method}
-\alias{comp_cos_merge,hdpSampleMulti-method}
-\alias{comp_dp_counts,hdpSampleMulti-method}
-\alias{comp_dp_distn,hdpSampleMulti-method}
 \alias{hdpSampleMulti-class}
+\alias{as.list,hdpSampleMulti-method}
+\alias{chains,hdpSampleMulti-method}
+\alias{chains}
 \alias{numcomp,hdpSampleMulti-method}
 \alias{prop.ex,hdpSampleMulti-method}
+\alias{comp_cos_merge,hdpSampleMulti-method}
+\alias{comp_categ_counts,hdpSampleMulti-method}
+\alias{comp_dp_counts,hdpSampleMulti-method}
+\alias{comp_categ_distn,hdpSampleMulti-method}
+\alias{comp_dp_distn,hdpSampleMulti-method}
 \title{hdpSampleMulti class for multiple independent hdpSampleChain objects for the same HDP}
 \usage{
 \S4method{as.list}{hdpSampleMulti}(x, ...)
@@ -61,6 +61,7 @@ hdpSampleMulti class for multiple independent hdpSampleChain objects for the sam
 
 \item \code{comp_dp_distn}: Get mean distribution over components for each DP
 }}
+
 \section{Slots}{
 
 \describe{

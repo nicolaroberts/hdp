@@ -35,4 +35,3 @@ dp(my_hdp)
 \code{\link{hdp_init}}, \code{\link{hdp_adddp}},
  \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 }
-

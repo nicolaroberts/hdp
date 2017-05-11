@@ -32,4 +32,3 @@ hdp_example <- hdp_addconparam(hdp_example, rep(1, 2), rep(1, 2))
 \code{\link{hdp_init}}, \code{\link{hdp_adddp}}, \code{\link{hdp_setdata}},
  \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 }
-

@@ -36,4 +36,3 @@ my_quick_hdp_chain <- hdp_posterior(my_quick_hdp, 100, 50, 10, 5)
 \seealso{
 \code{\link{hdp_init}}, \code{\link{hdp_posterior}}, \code{\link{hdp_prior_init}}
 }
-

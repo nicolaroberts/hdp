@@ -32,4 +32,3 @@ plot_numcluster(chain_adj)
 \code{\link{plot_lik}}, \code{\link{plot_numcluster}},
  \code{\link{plot_data_assigned}}
 }
-

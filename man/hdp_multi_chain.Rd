@@ -19,4 +19,3 @@ Gather multiple independent posterior sampling chains for the same HDP
 \seealso{
 \code{\link{hdp_posterior}}
 }
-

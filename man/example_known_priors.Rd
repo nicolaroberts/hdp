@@ -14,4 +14,3 @@ Two example prior components for the example data
 2 columns (one per prior component, each sums to 1).
 }
 \keyword{datasets}
-

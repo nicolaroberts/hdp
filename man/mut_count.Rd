@@ -17,4 +17,3 @@ carcinomas, and 100 skin cutaneous melanomas.
 Data is derived from TCGA exome-sequencing studies.
 }
 \keyword{datasets}
-

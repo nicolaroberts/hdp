@@ -16,4 +16,3 @@ content, and the samples are 100 lung squamous cell carcinomas.
 Data is derived from TCGA exome-sequencing studies.
 }
 \keyword{datasets}
-

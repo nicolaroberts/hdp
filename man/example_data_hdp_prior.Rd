@@ -15,4 +15,3 @@ Two of the underlying components are available as known prios
 in \code{\link{example_known_priors}}.
 }
 \keyword{datasets}
-

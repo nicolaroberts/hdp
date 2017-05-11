@@ -7,20 +7,16 @@
 \alias{hdp_extract_components,hdpSampleMulti-method}
 \title{Extract major components from the raw clusters}
 \usage{
-hdp_extract_components(x, cos.merge = 0.9, redo = TRUE)
+hdp_extract_components(x, cos.merge = 0.9)
 
-\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge)
+\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge = 0.9)
 
-\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge = 0.9,
-  redo = TRUE)
+\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge = 0.9)
 }
 \arguments{
 \item{x}{hdpSampleChain or hdpSampleMulti object}
 
 \item{cos.merge}{Merge components with cosine similarity above this threshold (default 0.90)}
-
-\item{redo}{Logical. If true - constituent chains with previously calculated components
-will be re-calculated. Only used for hdpSampleMulti.}
 }
 \value{
 A hdpSampleChain or hdpSampleMulti object updated with component information
@@ -36,6 +32,7 @@ Any new components in this case are prefixed with "N".
 
 \item \code{hdpSampleMulti}: Extract components for hdpSampleMulti
 }}
+
 \examples{
 hdp_extract_components(mut_example_chain)
 }
@@ -44,4 +41,3 @@ hdp_extract_components(mut_example_chain)
  \code{\link{plot_comp_size}}, \code{\link{plot_comp_distn}},
  \code{\link{plot_dp_comp_exposure}}
 }
-

@@ -40,4 +40,3 @@ my_hdp <- dp_activate(my_hdp, 1:13, 2)
 \code{\link{hdp_init}}, \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
  \code{\link{hdp_setdata}}, \code{\link{hdp_posterior}}
 }
-

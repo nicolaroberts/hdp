@@ -15,4 +15,3 @@ number of components
 \description{
 Get proportion of dataset explained (on average)
 }
-

@@ -2,10 +2,10 @@
 % Please edit documentation in R/aaa-classes-input.R, R/aaa-generics-input.R
 \docType{class}
 \name{hdpDP-class}
-\alias{as.list,hdpDP-method}
 \alias{hdpDP-class}
-\alias{numdata}
+\alias{as.list,hdpDP-method}
 \alias{numdata,hdpDP-method}
+\alias{numdata}
 \title{hdpDP class for a DP node}
 \usage{
 \S4method{as.list}{hdpDP}(x, ...)
@@ -26,6 +26,7 @@ note that the 'items' in parent nodes are the tables of their children
 
 \item \code{numdata}: Get number of data items at this DP.
 }}
+
 \section{Slots}{
 
 \describe{

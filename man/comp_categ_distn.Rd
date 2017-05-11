@@ -18,4 +18,3 @@ List with elements "mean" and "cred.int", containing
 \description{
 Get mean distribution over data categories for each component
 }
-

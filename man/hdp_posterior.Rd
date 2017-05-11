@@ -51,4 +51,3 @@ my_hdp_chain <- hdp_posterior(my_hdp, 100, 100, 10)
  \code{\link{cull_posterior_samples}}, \code{\link{plot_lik}}, \code{\link{plot_numcluster}},
  \code{\link{plot_data_assigned}}
 }
-

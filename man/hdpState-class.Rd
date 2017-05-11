@@ -2,32 +2,32 @@
 % Please edit documentation in R/aaa-classes-input.R, R/aaa-generics-input.R
 \docType{class}
 \name{hdpState-class}
-\alias{activating_seed}
-\alias{activating_seed,hdpState-method}
-\alias{as.list,hdpState-method}
-\alias{base}
-\alias{base,hdpState-method}
-\alias{base_params}
-\alias{base_params,hdpState-method}
-\alias{conparam}
-\alias{conparam,hdpState-method}
-\alias{cpindex}
-\alias{cpindex,hdpState-method}
-\alias{dp}
-\alias{dp,hdpState-method}
-\alias{dpstate}
-\alias{dpstate,hdpState-method}
 \alias{hdpState-class}
-\alias{numcateg}
-\alias{numcateg,hdpState-method}
-\alias{numconparam}
-\alias{numconparam,hdpState-method}
-\alias{numdp}
+\alias{as.list,hdpState-method}
 \alias{numdp,hdpState-method}
-\alias{ppindex}
+\alias{numdp}
+\alias{numconparam,hdpState-method}
+\alias{numconparam}
+\alias{base,hdpState-method}
+\alias{base}
+\alias{conparam,hdpState-method}
+\alias{conparam}
+\alias{dp,hdpState-method}
+\alias{dp}
+\alias{dpstate,hdpState-method}
+\alias{dpstate}
 \alias{ppindex,hdpState-method}
-\alias{pseudoDP}
+\alias{ppindex}
+\alias{cpindex,hdpState-method}
+\alias{cpindex}
+\alias{numcateg,hdpState-method}
+\alias{numcateg}
+\alias{base_params,hdpState-method}
+\alias{base_params}
+\alias{activating_seed,hdpState-method}
+\alias{activating_seed}
 \alias{pseudoDP,hdpState-method}
+\alias{pseudoDP}
 \title{hdpState class for a Hierarchical Dirichlet Process in one state}
 \usage{
 \S4method{as.list}{hdpState}(x, ...)
@@ -93,6 +93,7 @@ hdpState class for a Hierarchical Dirichlet Process in one state
 \item \code{pseudoDP}: Get index of frozen pseudo-data DP nodes for prior info
 (only if initialised via hdp_prior_init)
 }}
+
 \section{Slots}{
 
 \describe{

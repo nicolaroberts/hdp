@@ -18,4 +18,3 @@ List of matrices (one for each component)
 \description{
 Get sample vs category counts for each component
 }
-

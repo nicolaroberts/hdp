@@ -2,8 +2,8 @@
 % Please edit documentation in R/aaa-classes-input.R, R/aaa-generics-input.R
 \docType{class}
 \name{hdpBase-class}
-\alias{as.list,hdpBase-method}
 \alias{hdpBase-class}
+\alias{as.list,hdpBase-method}
 \title{hdpBase class for the base distribution}
 \usage{
 \S4method{as.list}{hdpBase}(x, ...)
@@ -20,6 +20,7 @@ hdpBase class for the base distribution
 \itemize{
 \item \code{as.list}: convert to list class
 }}
+
 \section{Slots}{
 
 \describe{

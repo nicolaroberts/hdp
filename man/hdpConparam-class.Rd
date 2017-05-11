@@ -2,8 +2,8 @@
 % Please edit documentation in R/aaa-classes-input.R, R/aaa-generics-input.R
 \docType{class}
 \name{hdpConparam-class}
-\alias{as.list,hdpConparam-method}
 \alias{hdpConparam-class}
+\alias{as.list,hdpConparam-method}
 \title{hdpConparam class for the DP concentration parameter/s}
 \usage{
 \S4method{as.list}{hdpConparam}(x, ...)
@@ -20,6 +20,7 @@ hdpConparam class for the DP concentration parameter/s
 \itemize{
 \item \code{as.list}: convert to list class
 }}
+
 \section{Slots}{
 
 \describe{

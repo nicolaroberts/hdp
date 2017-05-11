@@ -21,4 +21,3 @@ Each chain initialised with 10 clusters, then run 4000 burn-in iterations
 before collecting 50 posterior samples with 50 iterations between each.
 }
 \keyword{datasets}
-

@@ -26,4 +26,3 @@ second posterior sampling chain over the new nodes (\emph{given} the information
 \code{\link{hdp_init}}, \code{\link{hdp_addconparam}}, \code{\link{hdp_adddp}},
  \code{\link{hdp_setdata}}, \code{\link{dp_activate}}, \code{\link{hdp_posterior}}
 }
-

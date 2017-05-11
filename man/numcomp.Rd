@@ -15,4 +15,3 @@ number of components
 \description{
 Get number of extracted components
 }
-

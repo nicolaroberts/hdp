@@ -15,4 +15,3 @@ different average mixture ratio in the first five samples from the last
 five samples.
 }
 \keyword{datasets}
-

@@ -47,4 +47,3 @@ plot_dp_comp_exposure(hdp_ex, 5:104, col_comp=rainbow(5))
 \seealso{
 \code{\link{hdp_init}}
 }
-

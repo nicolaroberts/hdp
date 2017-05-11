@@ -2,31 +2,31 @@
 % Please edit documentation in R/aaa-classes-output.R, R/aaa-generics-output.R
 \docType{class}
 \name{hdpSampleChain-class}
-\alias{as.list,hdpSampleChain-method}
-\alias{clust_categ_counts}
-\alias{clust_categ_counts,hdpSampleChain-method}
-\alias{clust_dp_counts}
-\alias{clust_dp_counts,hdpSampleChain-method}
-\alias{comp_categ_counts,hdpSampleChain-method}
-\alias{comp_categ_distn,hdpSampleChain-method}
-\alias{comp_cos_merge,hdpSampleChain-method}
-\alias{comp_dp_counts,hdpSampleChain-method}
-\alias{comp_dp_distn,hdpSampleChain-method}
-\alias{cp_values}
-\alias{cp_values,hdpSampleChain-method}
-\alias{final_hdpState}
-\alias{final_hdpState,hdpSampleChain-method}
 \alias{hdpSampleChain-class}
-\alias{hdp_settings}
+\alias{as.list,hdpSampleChain-method}
+\alias{sampling_seed,hdpSampleChain-method}
+\alias{sampling_seed}
 \alias{hdp_settings,hdpSampleChain-method}
-\alias{lik}
+\alias{hdp_settings}
+\alias{final_hdpState,hdpSampleChain-method}
+\alias{final_hdpState}
 \alias{lik,hdpSampleChain-method}
-\alias{numcluster}
+\alias{lik}
 \alias{numcluster,hdpSampleChain-method}
+\alias{numcluster}
+\alias{cp_values,hdpSampleChain-method}
+\alias{cp_values}
+\alias{clust_categ_counts,hdpSampleChain-method}
+\alias{clust_categ_counts}
+\alias{clust_dp_counts,hdpSampleChain-method}
+\alias{clust_dp_counts}
 \alias{numcomp,hdpSampleChain-method}
 \alias{prop.ex,hdpSampleChain-method}
-\alias{sampling_seed}
-\alias{sampling_seed,hdpSampleChain-method}
+\alias{comp_cos_merge,hdpSampleChain-method}
+\alias{comp_categ_counts,hdpSampleChain-method}
+\alias{comp_dp_counts,hdpSampleChain-method}
+\alias{comp_categ_distn,hdpSampleChain-method}
+\alias{comp_dp_distn,hdpSampleChain-method}
 \title{hdpSampleChain class for posterior samples off one MCMC chain}
 \usage{
 \S4method{as.list}{hdpSampleChain}(x, ...)
@@ -103,6 +103,7 @@ hdpSampleChain class for posterior samples off one MCMC chain
 
 \item \code{comp_dp_distn}: Get mean distribution over components for each DP
 }}
+
 \section{Slots}{
 
 \describe{
