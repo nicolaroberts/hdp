@@ -291,12 +291,12 @@ for (i in 0:(length(comp_categ_counts(lusc_multi)) -1)) {
 
 plot_dp_comp_exposure(lusc_multi, main_text="Lung squamous",
                       dpindices=306:405, 
-                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      col=c(RColorBrewer::brewer.pal(12, "Set3"), 'navy'),
                       incl_nonsig=FALSE)
 
 plot_dp_comp_exposure(lusc_multi,
                       dpindices=c(305, 2:4), incl_numdata_plot=FALSE,
-                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      col=c(RColorBrewer::brewer.pal(12, "Set3"), 'navy'),
                       incl_nonsig=FALSE,
                       dpnames=c("Lung Squamous", "Lung Adeno", 
                                 "Ovarian", "Melanoma"))

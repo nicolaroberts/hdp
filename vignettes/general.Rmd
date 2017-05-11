@@ -311,7 +311,7 @@ by dropping some initial samples
 ## Extract components from hdpSampleMulti
 
 For a `hdpSampleMulti` object, the `hdp_extract_components()` function matches
-clusters across posterior samples and chains, and groups them into components. 
+clusters across posterior samples (considering all chains together), and groups them into components. 
 Recall that data items not assigned to the main components are
 captured by the 'zero component' for noise and uncertainty. 
 
