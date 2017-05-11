@@ -305,7 +305,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
   # if incl_numdata_plot TRUE, throw error if one DP has no data associated
   if (incl_numdata_plot & any(numdata == 0)) {
     stop("Can't have incl_numdata_plot TRUE if
-         one or more dpindices have no associated data item")
+         one or more dpindices have no associated data item/s")
   }
 
   # if different parent indices, warning
@@ -315,12 +315,12 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
   }
 
   # mean exposures
-  exposures <- t(dp_distn$mean[dpindices,])
-  if (nrow(exposures)==1) {
-    dim(exposures) <- rev(dim(exposures))
-    rownames(exposures) <- colnames(dp_distn$mean)
-    }
-
+  exposures <- t(dp_distn$mean[dpindices,,drop=FALSE])
+  # think I don't need this anymore with drop=FALSE above?
+  # if (nrow(exposures)==1) {
+  #   dim(exposures) <- rev(dim(exposures))
+  #   rownames(exposures) <- colnames(dp_distn$mean)
+  #   }
 
   # only include significantly non-zero exposures
   if (!incl_nonsig){
@@ -350,7 +350,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
             args.legend=list(fill=col_comp[inc], bty="n", title=leg.title,
                              ncol=num_leg_col), ...)
 
-    barplot(as.matrix(exposures[inc, dp_order]), space=0, col=col_comp[inc], border=NA,
+    barplot(as.matrix(exposures[inc, dp_order, drop=FALSE]), space=0, col=col_comp[inc], border=NA,
             ylim=c(0, 1), names.arg=dpnames[dp_order], ylab=ylab_exp,
             cex.names=cex.names, ...)
   } else {
@@ -358,7 +358,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
     par(cex.axis=cex.axis, las=2)
     # don't understand why legend.text needs rev() here and not in above case,
     # but seems to work?
-    barplot(as.matrix(exposures[inc, dp_order]), space=0, col=col_comp[inc],
+    barplot(as.matrix(exposures[inc, dp_order, drop=FALSE]), space=0, col=col_comp[inc],
             border=NA, ylim=c(0, 1),
             xlim=c(0, length(dpindices) + num_leg_col + 1),
             names.arg=dpnames[dp_order],
