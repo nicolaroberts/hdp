@@ -393,8 +393,6 @@ setMethod("comp_dp_distn",
 #'
 #' @param x hdpSampleChain or hdpSampleMulti object
 #' @param cos.merge Merge components with cosine similarity above this threshold (default 0.90)
-#' @param redo Logical. If true - constituent chains with previously calculated components
-#'  will be re-calculated. Only used for hdpSampleMulti.
 #' @return A hdpSampleChain or hdpSampleMulti object updated with component information
 #' @aliases hdp_extract_components
 #' @seealso \code{\link{hdp_posterior}}, \code{\link{hdp_multi_chain}},
@@ -407,7 +405,7 @@ setMethod("comp_dp_distn",
 #' hdp_extract_components(mut_example_chain)
 
 setGeneric("hdp_extract_components",
-           function(x, cos.merge=0.9, redo=TRUE)
+           function(x, cos.merge=0.9)
              standardGeneric("hdp_extract_components"))
 
 #' @describeIn hdp_extract_components Extract components for hdpSampleChain
@@ -421,7 +419,7 @@ setMethod("hdp_extract_components",
 #' @describeIn hdp_extract_components Extract components for hdpSampleMulti
 setMethod("hdp_extract_components",
           signature = "hdpSampleMulti",
-          definition = function(x, cos.merge, redo) {
-            ans <- hdp_extract_comp_multi(x, cos.merge, redo)
+          definition = function(x, cos.merge) {
+            ans <- hdp_extract_comp_multi(x, cos.merge)
             return(ans)
           })

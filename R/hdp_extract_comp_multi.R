@@ -1,4 +1,4 @@
-hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
+hdp_extract_comp_multi <- function(chains, cos.merge=0.90){
 
   # input checks
   if (class(chains) != "hdpSampleMulti") {
@@ -8,7 +8,6 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
   if (class(cos.merge) != "numeric" | cos.merge >=1 | cos.merge <= 0) {
     stop("cos.merge must be between 0 and 1")
   }
-  if (class(redo) != "logical") stop("redo must be TRUE or FALSE")
 
   # list of hdpSampleChain objects
   chlist <- chains@chains
@@ -291,7 +290,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, redo=TRUE){
 
   # if prior sigs, remove pseudo data from ccc
   if (is_prior){
-    pseudodata <- sapply(dp(final_hdpState(chain))[pseudo],
+    pseudodata <- sapply(dp(final_hdpState(chlist[[1]]))[pseudo],
                          function(x) table(factor(x@datass, levels=1:ncat)))
     colnames(pseudodata) <- paste0("P", 1:ncol(pseudodata))
 
