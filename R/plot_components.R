@@ -40,7 +40,7 @@ plot_comp_size <- function(hdpsample, legend=TRUE, col_a="hotpink",
   if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
     stop("hdpsample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(hdpsample)) stop("hdpsample not valid")
+  # if (!validObject(hdpsample)) stop("hdpsample not valid") # too slow on big objects
   if (length(comp_categ_counts(hdpsample)) == 0) {
     stop("No component info for hdpsample. First run hdp_extract_components")
   }
@@ -100,7 +100,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
   if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
     stop("hdpsample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(hdpsample)) stop("hdpsample not valid")
+  # if (!validObject(hdpsample)) stop("hdpsample not valid") # too slow on big objects
   if (length(comp_categ_counts(hdpsample)) == 0) {
     stop("No component info for hdpsample. First run hdp_extract_components")
   }
@@ -257,7 +257,7 @@ plot_dp_comp_exposure <- function(hdpsample, dpindices, col_comp, dpnames=NULL,
   if (!class(hdpsample) %in% c("hdpSampleChain", "hdpSampleMulti")) {
     stop("hdpsample must have class hdpSampleChain or hdpSampleMulti")
   }
-  if (!validObject(hdpsample)) stop("hdpsample not valid")
+  # if (!validObject(hdpsample)) stop("hdpsample not valid") # too slow on big objects
   if (length(comp_categ_counts(hdpsample)) == 0) {
     stop("No component info for hdpsample. First run hdp_extract_components")
   }
