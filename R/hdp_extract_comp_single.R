@@ -145,7 +145,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
                 if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
                   NaN
                 } else {
-                  round(coda::HPDinterval(samp)[1], 3)
+                  round(coda::HPDinterval(samp, 0.9)[1], 3)
                 }
               })
     if(any(lowerb>0)) use_clust <- c(use_clust, colnames(ccc_3[[1]])[ii])
@@ -177,7 +177,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
       if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         NaN
       } else {
-        round(coda::HPDinterval(samp)[1], 3)
+        round(coda::HPDinterval(samp, 0.9)[1], 3)
       }
     })
     if(any(lowerb>0)) use_clust <- c(use_clust, colnames(cdc_4[[1]])[ii])
@@ -277,7 +277,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
   remove(ccc_6, cdc_6)
 
   # Step (8)
-  # Calculate mean and 95% credibility interval for each component's
+  # Calculate mean and 90% credibility interval for each component's
   # categorical data distribution
   ccc_norm <- lapply(ccc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
@@ -289,13 +289,13 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
       if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
           c(NaN, NaN)
       } else {
-          round(coda::HPDinterval(samp), 3)
+          round(coda::HPDinterval(samp, 0.9), 4)
       }
     })
   })
 
   # Step (8)
-  # Calculate mean and 95% credibility interval for each DP's
+  # Calculate mean and 90% credibility interval for each DP's
   # distribution over components (counts)
   cdc_norm <- lapply(cdc_ans, function(x) x/rowSums(x, na.rm=TRUE))
 
@@ -307,7 +307,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
       if (min(sum(!is.na(samp)), sum(!is.nan(samp))) %in% c(0,1)) {
         c(NaN, NaN)
       } else {
-        round(coda::HPDinterval(samp), 3)
+        round(coda::HPDinterval(samp, 0.9), 4)
       }
     })
   })
