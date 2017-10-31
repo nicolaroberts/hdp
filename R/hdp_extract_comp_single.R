@@ -39,15 +39,22 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
     return(ans[, -ncol(ans)])
   })
 
+
+
+  # if priors, remove pseudo-counts from ccc_1
+  if (is_prior){
+    pseudodata <- sapply(dp(final_hdpState(chain))[pseudo],
+                         function(x) table(factor(x@datass, levels=1:ncat)))
+
+    ccc_1 <- lapply(ccc_1, function(x) {
+                            x[,priorcc] <- x[,priorcc] - pseudodata
+                            return(x)
+                            })
+  }
+
   # Step (2)
   # Match up raw clusters (matrix columns) across posterior samples (columns not
   # guaranteed to keep same component through all samples)
-
-  # if priors, hold back those columns and just match the new clusters
-  if (is_prior){
-    ccc_hold <- lapply(ccc_1, function(x) as.matrix(x[,priorcc]))
-    ccc_1 <- lapply(ccc_1, function(x) as.matrix(x[,-priorcc]))
-  }
 
   # K-centroids clustering of all raw clusters with cannot-link constraints
   # within each posterior sample, Manhattan distance and median centroid
@@ -76,16 +83,6 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
 
     }
 
-
-  if(is_prior){
-    ccc_label <- lapply(ccc_label, `+`, max(priorcc))
-    ccc_label <- lapply(ccc_label, function(x) c(priorcc, x))
-
-    ccc_1 <- mapply(cbind, ccc_hold, ccc_1, SIMPLIFY = FALSE)
-
-    remove(ccc_hold)
-  }
-
   ccc_2 <- mapply(function(ccc, label) {
     colnames(ccc) <- label
     ccc[, order(as.numeric(colnames(ccc)))]
@@ -110,14 +107,6 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
   clust_cos <- lsa::cosine(avgdistn)
   clust_same <- (clust_cos > cos.merge & lower.tri(clust_cos))
   same <- which(clust_same, arr.ind=TRUE) # merge these columns
-
-  # if priors, do not merge two prior clusters
-  if (is_prior){
-    if (length(same)>0) {
-      ignore <- which(apply(same, 1, function(x) all(x %in% priorcc)))
-      same <- matrix(same[-ignore,], ncol=2)
-    }
-  }
 
   # update clust_label vector to reflect the merging of columns.
   if (length(same)>0){
@@ -151,11 +140,6 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
     if(any(lowerb>0)) use_clust <- c(use_clust, colnames(ccc_3[[1]])[ii])
   }
 
-  # if priors, must include them all
-  if(is_prior){
-    use_clust <- union(use_clust, as.character(priorcc))
-  }
-
   # update clust_label vector
   clust_label[which(!clust_label %in% use_clust)] <- 0
   ccc_4 <- lapply(ccc_3, merge_cols, clust_label)
@@ -183,11 +167,6 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
     if(any(lowerb>0)) use_clust <- c(use_clust, colnames(cdc_4[[1]])[ii])
   }
 
-  # if prior sigs, must include them all
-  if(is_prior){
-    use_clust <- union(use_clust, as.character(priorcc))
-  }
-
   # update clust_label vector
   clust_label[which(!clust_label %in% use_clust)] <- 0
   ccc_5 <- lapply(ccc_4, merge_cols, clust_label)
@@ -195,7 +174,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
   clust_label <- colnames(ccc_5[[1]])
   if (any(clust_label != colnames(cdc_5))) stop("problem in step 5!")
 
-  remove(compii, ccc_4, cdc_4, ii, lowerb, use_clust)
+  remove(compii, ccc_4, cdc_4, ii, lowerb, use_clust, disregard)
 
   # Step (6)
   # Rename overall component, order by number of data items (on average)
@@ -204,14 +183,59 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
   avg_ndi <- rowMeans(sapply(ccc_5, colSums))
   colorder <- c(1, setdiff(order(avg_ndi, decreasing=T), 1))
 
-  ccc_6 <- lapply(ccc_5, function(x) {
-    if (is_prior) {
-      colnames(x) <- c("0", paste0("P", priorcc),
-                       paste0("N", 1:(ncol(x)-length(priorcc)-1)))[1:ncol(x)]
+
+  # If priors,
+  # update clust_label to reflect match (down to 0.85) with prior components
+  if (is_prior) {
+
+    nco <- length(clust_label)
+
+    # average distribution over data categ for each component
+    avgdistn <- sapply(2:nco, function(i){
+      distns <- sapply(ccc_5, function(x) x[, i]/sum(x[, i]))
+      ans <- rowMeans(distns, na.rm=T)
+      return(ans)
+    })
+
+    # compare against original pseudodata distn
+    match2_pseudo <- apply(avgdistn, 2, function(x) lsa::cosine(x, pseudodata))
+    rownames(match2_pseudo) <- priorcc
+    colnames(match2_pseudo) <- clust_label[-1]
+
+    to_match <- TRUE
+    while(to_match){
+      if(!any(match2_pseudo>0.85)) {
+        to_match <- FALSE
+        break
+      }
+
+      best_match <- which(match2_pseudo==max(match2_pseudo), arr.ind = TRUE)
+      old <- colnames(match2_pseudo)[best_match[2]]
+      new <- paste0("P", rownames(match2_pseudo)[best_match[1]])
+      clust_label[which(clust_label == old)] <- new
+
+      match2_pseudo <- match2_pseudo[-best_match[1], -best_match[2]]
+
     }
+    suppressWarnings(rm(to_match, match2_pseudo, avgdistn, best_match, old, new, nco))
+
+    ccc_5 <- lapply(ccc_5, function(x) {
+      colnames(x) <- clust_label
+      return(x)
+    })
+
+    cdc_5 <- lapply(cdc_5, function(x) {
+      colnames(x) <- clust_label
+      return(x)
+    })
+
+  }
+
+
+  ccc_6 <- lapply(ccc_5, function(x) {
     x <- x[, colorder]
     if (is_prior){
-      update <- which(grepl("N", colnames(x)))
+      update <- setdiff(which(!grepl("P", colnames(x))), 1)
       if (length(update)>0){
         colnames(x)[update] <- paste0("N", 1:length(update))
       }
@@ -222,13 +246,9 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
   })
 
   cdc_6 <- lapply(cdc_5, function(x) {
-    if (is_prior) {
-      colnames(x) <- c("0", paste0("P", priorcc),
-                       paste0("N", 1:(ncol(x)-length(priorcc)-1)))[1:ncol(x)]
-    }
     x <- x[, colorder]
     if (is_prior){
-      update <- which(grepl("N", colnames(x)))
+      update <- setdiff(which(!grepl("P", colnames(x))), 1)
       if (length(update)>0){
         colnames(x)[update] <- paste0("N", 1:length(update))
       }
@@ -246,21 +266,6 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
 
   # Step (7)
   # Convert ccc into list of length ncomp, with matrices nsamp*ncat
-
-  # if prior sigs, remove pseudo data from ccc
-  if (is_prior){
-    pseudodata <- sapply(dp(final_hdpState(chain))[pseudo],
-                         function(x) table(factor(x@datass, levels=1:ncat)))
-    colnames(pseudodata) <- paste0("P", 1:ncol(pseudodata))
-
-    cn <- colnames(ccc_6[[1]])
-    cnp <- which(grepl("P", cn))
-
-    ccc_6 <- lapply(ccc_6, function(x) {
-      x[,cnp] <- x[,cnp] - pseudodata[,cn[cnp]]
-      return(x)
-    })
-  }
 
   ccc_ans <- rep(list(matrix(0, nrow=nsamp, ncol=ncat)), ncomp)
   for (i in 1:ncomp){
