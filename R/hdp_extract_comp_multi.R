@@ -255,7 +255,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90){
       new <- paste0("P", rownames(match2_pseudo)[best_match[1]])
       clust_label[which(clust_label == old)] <- new
 
-      match2_pseudo <- match2_pseudo[-best_match[1], -best_match[2]]
+      match2_pseudo <- match2_pseudo[-best_match[1], -best_match[2], drop=FALSE]
 
     }
     suppressWarnings(rm(to_match, match2_pseudo, avgdistn, best_match, old, new, nco))
