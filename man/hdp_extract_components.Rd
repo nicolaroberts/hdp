@@ -7,23 +7,25 @@
 \alias{hdp_extract_components,hdpSampleMulti-method}
 \title{Extract major components from the raw clusters}
 \usage{
-hdp_extract_components(x, cos.merge = 0.9)
+hdp_extract_components(x, cos.merge = 0.9, min.sample = 1)
 
-\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge = 0.9)
+\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge)
 
-\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge = 0.9)
+\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge)
 }
 \arguments{
 \item{x}{hdpSampleChain or hdpSampleMulti object}
 
 \item{cos.merge}{Merge components with cosine similarity above this threshold (default 0.90)}
+
+\item{min.sample}{Components must have significant exposure in at least this many samples (i.e. those DP nodes with data assigned) (default 1)}
 }
 \value{
 A hdpSampleChain or hdpSampleMulti object updated with component information
 }
 \description{
-If prior components included via \code{\link{hdp_prior_init}}, they will be
-preserved by \code{hdp_extract_components} and prefixed with "P".
+If prior components included via \code{\link{hdp_prior_init}} are
+preserved by \code{hdp_extract_components}, they are prefixed with "P".
 Any new components in this case are prefixed with "N".
 }
 \section{Methods (by class)}{

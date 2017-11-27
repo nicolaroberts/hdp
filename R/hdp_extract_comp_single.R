@@ -1,4 +1,4 @@
-hdp_extract_comp_single <- function(chain, cos.merge=0.90){
+hdp_extract_comp_single <- function(chain, cos.merge=0.90, min.sample=1){
 
   # input checks
   if (class(chain) != "hdpSampleChain") {
@@ -150,7 +150,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
   remove(compii, ccc_3, cdc_3, ii, lowerb, use_clust)
 
   # Step (5)
-  # Assign components with no *significantly* non-zero sample exposure
+  # Assign components with < min.sample *significantly* non-zero sample exposure
   # to component '0' (disregarding DP nodes with no data items (parent nodes))
   use_clust <- c()
   disregard <- which(numdata==0)
@@ -164,7 +164,7 @@ hdp_extract_comp_single <- function(chain, cos.merge=0.90){
         round(coda::HPDinterval(samp, 0.95)[1], 3)
       }
     })
-    if(any(lowerb>0)) use_clust <- c(use_clust, colnames(cdc_4[[1]])[ii])
+    if(sum(lowerb>0)>=min.sample) use_clust <- c(use_clust, colnames(cdc_4[[1]])[ii])
   }
 
   # update clust_label vector
