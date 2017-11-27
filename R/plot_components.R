@@ -3,6 +3,8 @@
 #' @param hdpsample A hdpSampleChain or hdpSampleMulti object including output
 #'  from \code{\link{hdp_extract_components}}
 #' @name plotcomp
+#' @importFrom graphics abline axis barplot matplot mtext par plot points segments text
+#' @importFrom grDevices colorRampPalette
 #' @examples
 #' mut_example_multi <- hdp_extract_components(mut_example_multi)
 #' plot_comp_size(mut_example_multi, bty="L")

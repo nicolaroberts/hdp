@@ -1,4 +1,5 @@
 #' @import methods
+#' @importFrom stats rbeta runif
 NULL
 
 .onUnload <- function(libpath){
