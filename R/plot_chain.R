@@ -62,10 +62,12 @@ plot_numcluster <- function(chain, col="blue", xlab="Sample",
 #' @param legend Logical - should a legend be included? (default TRUE)
 #' @param col_early Color ramp side for early posterior samples
 #' @param col_late Color ramp side for late posterior samples
+#' @param dat_prop Extend horiztonal axis to dat_prop proportion of data assigned
 #' @export
 #' @rdname plotchain
 plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
                                col_late="skyblue3",
+                               dat_prop = 0.995,
                                xlab="Number of raw clusters",
                                ylab="Cumulative prop. of data assigned", ...){
 
@@ -96,7 +98,7 @@ plot_data_assigned <- function(chain, legend=TRUE, col_early="hotpink",
   # average line
   avg <- rowMeans(pda, na.rm=T)
   # number of clusters (on average) needed to explain 99.9% of dataset
-  xmax <- which(avg>0.999)[1]
+  xmax <- which(avg>dat_prop)[1]
 
   # colour ramp across posterior samples
   cols <- colorRampPalette(colors=c(col_early, col_late))

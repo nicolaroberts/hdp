@@ -14,7 +14,8 @@ plot_numcluster(chain, col = "blue", xlab = "Sample",
   ylab = "Number of raw clusters", ...)
 
 plot_data_assigned(chain, legend = TRUE, col_early = "hotpink",
-  col_late = "skyblue3", xlab = "Number of raw clusters",
+  col_late = "skyblue3", dat_prop = 0.995,
+  xlab = "Number of raw clusters",
   ylab = "Cumulative prop. of data assigned", ...)
 }
 \arguments{
@@ -41,6 +42,8 @@ plot_data_assigned(chain, legend = TRUE, col_early = "hotpink",
 \item{col_early}{Color ramp side for early posterior samples}
 
 \item{col_late}{Color ramp side for late posterior samples}
+
+\item{dat_prop}{Extend horiztonal axis to dat_prop proportion of data assigned}
 }
 \description{
 Diagnostic plots for HDP posterior sampling chain
