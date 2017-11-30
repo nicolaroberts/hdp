@@ -412,15 +412,15 @@ setGeneric("hdp_extract_components",
 #' @describeIn hdp_extract_components Extract components for hdpSampleChain
 setMethod("hdp_extract_components",
           signature = "hdpSampleChain",
-          definition = function(x, cos.merge) {
-            ans <- hdp_extract_comp_single(x, cos.merge)
+          definition = function(x, cos.merge, min.sample) {
+            ans <- hdp_extract_comp_single(x, cos.merge, min.sample)
             return(ans)
           })
 
 #' @describeIn hdp_extract_components Extract components for hdpSampleMulti
 setMethod("hdp_extract_components",
           signature = "hdpSampleMulti",
-          definition = function(x, cos.merge) {
-            ans <- hdp_extract_comp_multi(x, cos.merge)
+          definition = function(x, cos.merge, min.sample) {
+            ans <- hdp_extract_comp_multi(x, cos.merge, min.sample)
             return(ans)
           })

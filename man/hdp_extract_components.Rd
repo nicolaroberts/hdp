@@ -9,9 +9,11 @@
 \usage{
 hdp_extract_components(x, cos.merge = 0.9, min.sample = 1)
 
-\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge)
+\S4method{hdp_extract_components}{hdpSampleChain}(x, cos.merge = 0.9,
+  min.sample = 1)
 
-\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge)
+\S4method{hdp_extract_components}{hdpSampleMulti}(x, cos.merge = 0.9,
+  min.sample = 1)
 }
 \arguments{
 \item{x}{hdpSampleChain or hdpSampleMulti object}
