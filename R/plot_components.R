@@ -219,7 +219,7 @@ plot_comp_distn <- function(hdpsample, comp=NULL, cat_names=NULL,
       glcol <- col[as.factor(gl$values)]
 
       segments(x0=b[glstarts], x1=b[glends],
-               y0=plottop, col=glcol, lwd=10)
+               y0=plottop, col=glcol, lwd=10, lend=2)
 
       text(b[floor(glends/2 + glstarts/2)], y=plottop*group_label_height,
            labels=gl$values)
