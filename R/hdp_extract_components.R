@@ -4,7 +4,7 @@
 #' preserved by \code{hdp_extract_components}, they are prefixed with "P".
 #' Any new components in this case are prefixed with "N".
 #'
-#' @param x hdpSampleChain or hdpSampleMulti object
+#' @param chains hdpSampleChain or hdpSampleMulti object
 #' @param cos.merge Merge components with cosine similarity above this threshold (default 0.90)
 #' @param min.sample Components must have significant exposure in at least this many samples (i.e. those DP nodes with data assigned) (default 1)
 #' @return A hdpSampleChain or hdpSampleMulti object updated with component information
@@ -33,7 +33,7 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
   if (class(cos.merge) != "numeric" | cos.merge >=1 | cos.merge <= 0) {
     stop("cos.merge must be between 0 and 1")
   }
-  if (min.sample %% 1 != 0 | min.sample >=1) {
+  if (min.sample %% 1 != 0 | min.sample < 1) {
     stop("min.sample must be a positive integer")
   }
 
