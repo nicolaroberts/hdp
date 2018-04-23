@@ -1,26 +1,67 @@
-hdp_extract_comp_multi <- function(chains, cos.merge=0.90, min.sample=1){
+#' Extract major components from the raw clusters
+#'
+#' If prior components included via \code{\link{hdp_prior_init}} are
+#' preserved by \code{hdp_extract_components}, they are prefixed with "P".
+#' Any new components in this case are prefixed with "N".
+#'
+#' @param x hdpSampleChain or hdpSampleMulti object
+#' @param cos.merge Merge components with cosine similarity above this threshold (default 0.90)
+#' @param min.sample Components must have significant exposure in at least this many samples (i.e. those DP nodes with data assigned) (default 1)
+#' @return A hdpSampleChain or hdpSampleMulti object updated with component information
+#' @aliases hdp_extract_components
+#' @seealso \code{\link{hdp_posterior}}, \code{\link{hdp_multi_chain}},
+#'  \code{\link{plot_comp_size}}, \code{\link{plot_comp_distn}},
+#'  \code{\link{plot_dp_comp_exposure}}
+#' @import clue
+#' @export
+#' @examples
+#' hdp_extract_components(mut_example_chain)
+hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
 
   # input checks
-  if (class(chains) != "hdpSampleMulti") {
-    stop("chains must have class hdpSampleMulti")
-  }
-  if (!validObject(chains)) stop("chains not a valid hdpSampleMulti object")
+  if (class(chains)=="hdpSampleChain") {
+      warning('Extracting components on single posterior sampling chain. Recommend switching to multiple independent chains in a hdpSampleMulti object, see ?hdp_multi_chain')
+      is_multi <- FALSE
+    } else if (class(chains)=="hdpSampleMulti") {
+      is_multi <- TRUE
+    } else {
+      stop("chains must have class hdpSampleChain or hdpSampleMulti")
+    }
+
+  if (!validObject(chains)) stop("chains not a valid object")
+
   if (class(cos.merge) != "numeric" | cos.merge >=1 | cos.merge <= 0) {
     stop("cos.merge must be between 0 and 1")
   }
+  if (min.sample %% 1 != 0 | min.sample >=1) {
+    stop("min.sample must be a positive integer")
+  }
 
-  # list of hdpSampleChain objects
-  chlist <- chains@chains
-  nch <- length(chlist)
 
-  set.seed(sampling_seed(chlist[[1]]), kind="Mersenne-Twister", normal.kind="Inversion")
+  if (is_multi) {
+    # list of hdpSampleChain objects
+    chlist <- chains@chains
+    nch <- length(chlist)
 
-  # number of categories, DPs, samples (across chains), data items at each DP, and frozen priors
-  ncat <- numcateg(final_hdpState(chlist[[1]]))
-  ndp <- numdp(final_hdpState(chlist[[1]]))
-  nsamp <- sum(sapply(chlist, function(x) hdp_settings(x)$n))
-  numdata <- sapply(dp(final_hdpState(chlist[[1]])), numdata)
-  pseudo <- pseudoDP(final_hdpState(chlist[[1]]))
+    # set seed, get final state and number of posterior samples
+    set.seed(sampling_seed(chlist[[1]]), kind="Mersenne-Twister", normal.kind="Inversion")
+    finalstate <- final_hdpState(chlist[[1]])
+    nsamp <- sum(sapply(chlist, function(x) hdp_settings(x)$n))
+
+  } else {
+    # set seed, get final state and number of posterior samples
+    set.seed(sampling_seed(chains), kind="Mersenne-Twister", normal.kind="Inversion")
+    finalstate <- final_hdpState(chains)
+    nsamp <- hdp_settings(chains)$n
+
+  }
+
+  # number of categories, DPs,data items at each DP, and frozen priors
+  ncat <- numcateg(finalstate)
+  ndp <- numdp(finalstate)
+  numdata <- sapply(dp(finalstate), numdata)
+  pseudo <- pseudoDP(finalstate)
+
   is_prior <- length(pseudo) > 0
   if (is_prior) {
     priorcc <- 1:length(pseudo)
@@ -30,68 +71,96 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, min.sample=1){
   # Step (1)
   # Make each ccc (clust_categ_counts) and
   # cdc (clust_dp_counts) matrix have the
-  # same number of columns - (across chains)
-  # and roughly line up the raw column order across chains
-  maxclust <- max(sapply(chlist, function(x) max(numcluster(x))))
-  clust_label <- 1:maxclust
+  # same number of columns
 
-  ccc_0 <- lapply(chlist, function(ch){
-    lapply(clust_categ_counts(ch), function(x){
+  if(is_multi){
+    maxclust <- max(sapply(chlist, function(x) max(numcluster(x))))
+    clust_label <- 1:maxclust
+
+    ccc_0 <- lapply(chlist, function(ch){
+      lapply(clust_categ_counts(ch), function(x){
+        ans <- cbind(x, matrix(0, nrow=ncat, ncol=(maxclust-ncol(x)+1)))
+        return(ans[, -ncol(ans)])
+      })
+    })
+
+
+    cdc_0 <- lapply(chlist, function(ch){
+      lapply(clust_dp_counts(ch), function(x){
+        ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
+        return(ans[, -ncol(ans)])
+      })
+    })
+
+    # if priors, remove pseudo-counts from ccc_0
+    if (is_prior){
+      pseudodata <- sapply(dp(final_hdpState(chlist[[1]]))[pseudo],
+                           function(x) table(factor(x@datass, levels=1:ncat)))
+
+      ccc_0 <- lapply(ccc_0, function(y) lapply(y, function(x) {
+        x[,priorcc] <- x[,priorcc] - pseudodata
+        return(x)
+      }))
+    }
+
+    ccc_raw_avg_per_ch <- lapply(ccc_0, function(matlist){ Reduce('+', matlist)/length(matlist) })
+
+    mclust <- ncol(ccc_raw_avg_per_ch[[1]])
+
+    rapch_unlist <- t(do.call(cbind, ccc_raw_avg_per_ch))
+    rapch_gf <- rep(1:nch, each=mclust)
+    rapch_ic <- rep(1:mclust, times=nch)
+
+    rapch_clust <- flexclust::kcca(rapch_unlist, k=rapch_ic,
+                                   group=rapch_gf,
+                                   family=flexclust::kccaFamily("kmedians",
+                                                                groupFun="differentClusters"))
+
+    rapch_label <- split(flexclust::clusters(rapch_clust), rapch_gf)
+
+    ccc_1 <- Reduce('c', mapply(function(matlist, rank){
+      lapply(matlist, function(mat){
+        ans <- mat[,order(rank)]
+        return(ans)
+      })
+    }, ccc_0, rapch_label, SIMPLIFY=FALSE))
+
+    cdc_1 <- Reduce('c', mapply(function(matlist, rank){
+      lapply(matlist, function(mat){
+        ans <- mat[,order(rank)]
+        return(ans)
+      })
+    }, cdc_0, rapch_label, SIMPLIFY=FALSE))
+
+    remove(ccc_0, cdc_0, ccc_raw_avg_per_ch, rapch_unlist, rapch_gf, rapch_ic,
+           rapch_clust, rapch_label, mclust)
+
+  } else {
+    maxclust <- max(numcluster(chains))
+    clust_label <- 1:maxclust
+
+    ccc_1 <- lapply(clust_categ_counts(chains), function(x){
       ans <- cbind(x, matrix(0, nrow=ncat, ncol=(maxclust-ncol(x)+1)))
       return(ans[, -ncol(ans)])
     })
-  })
 
-
-  cdc_0 <- lapply(chlist, function(ch){
-    lapply(clust_dp_counts(ch), function(x){
+    cdc_1 <- lapply(clust_dp_counts(chains), function(x){
       ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
       return(ans[, -ncol(ans)])
     })
-  })
 
-  # if priors, remove pseudo-counts from ccc_0
-  if (is_prior){
-    pseudodata <- sapply(dp(final_hdpState(chlist[[1]]))[pseudo],
-                         function(x) table(factor(x@datass, levels=1:ncat)))
+    # if priors, remove pseudo-counts from ccc_1
+    if (is_prior){
+      pseudodata <- sapply(dp(final_hdpState(chains))[pseudo],
+                           function(x) table(factor(x@datass, levels=1:ncat)))
 
-    ccc_0 <- lapply(ccc_0, function(y) lapply(y, function(x) {
-      x[,priorcc] <- x[,priorcc] - pseudodata
-      return(x)
-    }))
+      ccc_1 <- lapply(ccc_1, function(x) {
+        x[,priorcc] <- x[,priorcc] - pseudodata
+        return(x)
+      })
+    }
+
   }
-
-  ccc_raw_avg_per_ch <- lapply(ccc_0, function(matlist){ Reduce('+', matlist)/length(matlist) })
-
-  mclust <- ncol(ccc_raw_avg_per_ch[[1]])
-
-  rapch_unlist <- t(do.call(cbind, ccc_raw_avg_per_ch))
-  rapch_gf <- rep(1:nch, each=mclust)
-  rapch_ic <- rep(1:mclust, times=nch)
-
-  rapch_clust <- flexclust::kcca(rapch_unlist, k=rapch_ic,
-                               group=rapch_gf,
-                               family=flexclust::kccaFamily("kmedians",
-                                                            groupFun="differentClusters"))
-
-  rapch_label <- split(flexclust::clusters(rapch_clust), rapch_gf)
-
-  ccc_1 <- Reduce('c', mapply(function(matlist, rank){
-    lapply(matlist, function(mat){
-      ans <- mat[,order(rank)]
-      return(ans)
-    })
-  }, ccc_0, rapch_label, SIMPLIFY=FALSE))
-
-  cdc_1 <- Reduce('c', mapply(function(matlist, rank){
-    lapply(matlist, function(mat){
-      ans <- mat[,order(rank)]
-      return(ans)
-    })
-  }, cdc_0, rapch_label, SIMPLIFY=FALSE))
-
-  remove(ccc_0, cdc_0, ccc_raw_avg_per_ch, rapch_unlist, rapch_gf, rapch_ic,
-         rapch_clust, rapch_label, mclust)
 
 
   # Step (2)
@@ -224,6 +293,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, min.sample=1){
 
   avg_ndi <- rowMeans(sapply(ccc_5, colSums))
   colorder <- c(1, setdiff(order(avg_ndi, decreasing=T), 1))
+
 
   # If priors,
   # update clust_label to reflect match (down to 0.85) with prior components
@@ -358,7 +428,7 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, min.sample=1){
     })
   })
 
-  # add extracted components into hdpSampleMulti slots
+  # add extracted components into chains hdpSampleChain slots
   chains@numcomp <- as.integer(ncomp - 1)
 
   # proportion of data explained by extracted components?
@@ -370,12 +440,11 @@ hdp_extract_comp_multi <- function(chains, cos.merge=0.90, min.sample=1){
   chains@comp_categ_counts <- ccc_ans
   chains@comp_dp_counts <- lapply(cdc_ans, as, "dgCMatrix")
   chains@comp_categ_distn <- list(mean=ccc_mean,
-                                  cred.int=ccc_credint)
+                                 cred.int=ccc_credint)
   chains@comp_dp_distn <- list(mean=cdc_mean,
-                               cred.int=cdc_credint)
+                              cred.int=cdc_credint)
 
   # check validity and return
-  if (!validObject(chains)) warning("Not a valid hdpSampleMulti object.")
+  if (!validObject(chains)) warning("Not a valid hdpSampleChain/Multi object.")
   return(chains)
-
 }
