@@ -4,7 +4,7 @@
 #' preserved by \code{hdp_extract_components}, they are prefixed with "P".
 #' Any new components in this case are prefixed with "N".
 #'
-#' @param chains hdpSampleChain or hdpSampleMulti object
+#' @param x hdpSampleChain or hdpSampleMulti object
 #' @param cos.merge Merge components with cosine similarity above this threshold (default 0.90)
 #' @param min.sample Components must have significant exposure in at least this many samples (i.e. those DP nodes with data assigned) (default 1)
 #' @return A hdpSampleChain or hdpSampleMulti object updated with component information
@@ -16,19 +16,19 @@
 #' @export
 #' @examples
 #' hdp_extract_components(mut_example_chain)
-hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
+hdp_extract_components <- function(x, cos.merge=0.90, min.sample=1){
 
   # input checks
-  if (class(chains)=="hdpSampleChain") {
+  if (class(x)=="hdpSampleChain") {
       warning('Extracting components on single posterior sampling chain. Recommend switching to multiple independent chains in a hdpSampleMulti object, see ?hdp_multi_chain')
       is_multi <- FALSE
-    } else if (class(chains)=="hdpSampleMulti") {
+    } else if (class(x)=="hdpSampleMulti") {
       is_multi <- TRUE
     } else {
-      stop("chains must have class hdpSampleChain or hdpSampleMulti")
+      stop("x must have class hdpSampleChain or hdpSampleMulti")
     }
 
-  if (!validObject(chains)) stop("chains not a valid object")
+  if (!validObject(x)) stop("x not a valid object")
 
   if (class(cos.merge) != "numeric" | cos.merge >=1 | cos.merge <= 0) {
     stop("cos.merge must be between 0 and 1")
@@ -40,7 +40,7 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
 
   if (is_multi) {
     # list of hdpSampleChain objects
-    chlist <- chains@chains
+    chlist <- x@chains
     nch <- length(chlist)
 
     # set seed, get final state and number of posterior samples
@@ -50,9 +50,9 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
 
   } else {
     # set seed, get final state and number of posterior samples
-    set.seed(sampling_seed(chains), kind="Mersenne-Twister", normal.kind="Inversion")
-    finalstate <- final_hdpState(chains)
-    nsamp <- hdp_settings(chains)$n
+    set.seed(sampling_seed(x), kind="Mersenne-Twister", normal.kind="Inversion")
+    finalstate <- final_hdpState(x)
+    nsamp <- hdp_settings(x)$n
 
   }
 
@@ -61,6 +61,7 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
   ndp <- numdp(finalstate)
   numdata <- sapply(dp(finalstate), numdata)
   pseudo <- pseudoDP(finalstate)
+  rm(finalstate)
 
   is_prior <- length(pseudo) > 0
   if (is_prior) {
@@ -74,6 +75,7 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
   # same number of columns
 
   if(is_multi){
+
     maxclust <- max(sapply(chlist, function(x) max(numcluster(x))))
     clust_label <- 1:maxclust
 
@@ -91,6 +93,7 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
         return(ans[, -ncol(ans)])
       })
     })
+
 
     # if priors, remove pseudo-counts from ccc_0
     if (is_prior){
@@ -136,22 +139,23 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
            rapch_clust, rapch_label, mclust)
 
   } else {
-    maxclust <- max(numcluster(chains))
+
+    maxclust <- max(numcluster(x))
     clust_label <- 1:maxclust
 
-    ccc_1 <- lapply(clust_categ_counts(chains), function(x){
+    ccc_1 <- lapply(clust_categ_counts(x), function(x){
       ans <- cbind(x, matrix(0, nrow=ncat, ncol=(maxclust-ncol(x)+1)))
       return(ans[, -ncol(ans)])
     })
 
-    cdc_1 <- lapply(clust_dp_counts(chains), function(x){
+    cdc_1 <- lapply(clust_dp_counts(x), function(x){
       ans <- cbind(x, matrix(0, nrow=ndp, ncol=(maxclust-ncol(x)+1)))
       return(ans[, -ncol(ans)])
     })
 
     # if priors, remove pseudo-counts from ccc_1
     if (is_prior){
-      pseudodata <- sapply(dp(final_hdpState(chains))[pseudo],
+      pseudodata <- sapply(dp(final_hdpState(x))[pseudo],
                            function(x) table(factor(x@datass, levels=1:ncat)))
 
       ccc_1 <- lapply(ccc_1, function(x) {
@@ -428,23 +432,23 @@ hdp_extract_components <- function(chains, cos.merge=0.90, min.sample=1){
     })
   })
 
-  # add extracted components into chains hdpSampleChain slots
-  chains@numcomp <- as.integer(ncomp - 1)
+  # add extracted components into x hdpSampleChain slots
+  x@numcomp <- as.integer(ncomp - 1)
 
   # proportion of data explained by extracted components?
   avcount <- colMeans(sapply(ccc_ans, rowSums, na.rm=TRUE), na.rm=TRUE)
-  chains@prop.ex <- round(1-avcount[1]/sum(avcount), 3)
+  x@prop.ex <- round(1-avcount[1]/sum(avcount), 3)
 
-  chains@comp_cos_merge <- cos.merge
+  x@comp_cos_merge <- cos.merge
 
-  chains@comp_categ_counts <- ccc_ans
-  chains@comp_dp_counts <- lapply(cdc_ans, as, "dgCMatrix")
-  chains@comp_categ_distn <- list(mean=ccc_mean,
+  x@comp_categ_counts <- ccc_ans
+  x@comp_dp_counts <- lapply(cdc_ans, as, "dgCMatrix")
+  x@comp_categ_distn <- list(mean=ccc_mean,
                                  cred.int=ccc_credint)
-  chains@comp_dp_distn <- list(mean=cdc_mean,
+  x@comp_dp_distn <- list(mean=cdc_mean,
                               cred.int=cdc_credint)
 
   # check validity and return
-  if (!validObject(chains)) warning("Not a valid hdpSampleChain/Multi object.")
-  return(chains)
+  if (!validObject(x)) warning("Not a valid hdpSampleChain/Multi object.")
+  return(x)
 }
