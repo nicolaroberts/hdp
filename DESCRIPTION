@@ -1,6 +1,6 @@
 Package: hdp
 Title: Hierarchical Dirichlet Process for categorical count data
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: c(person("Nicola", "Roberts",
   email="nr3@sanger.ac.uk", role=c("aut", "cre")),
   person("Yee Whye", "Teh", role=c("aut", "cph"),
