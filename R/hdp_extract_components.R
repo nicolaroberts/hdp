@@ -284,7 +284,7 @@ hdp_extract_components <- function(x, cos.merge=0.90, min.sample=1){
   # Assign components with < min.sample *significantly* non-zero sample exposure
   # to component '0' (disregarding DP nodes with no data items (parent nodes))
   use_clust <- c()
-  disregard <- which(numdata==0)
+  disregard <- if(is_prior) union(which(numdata==0), pseudo) else which(numdata==0)
   for (ii in 1:ncol(cdc_4[[1]])) {
     compii <- sapply(cdc_4, function(x) x[,ii])
     lowerb <- apply(compii[-disregard,], 1, function(y) {
