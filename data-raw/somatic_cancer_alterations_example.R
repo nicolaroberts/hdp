@@ -65,50 +65,67 @@ for (i in 1:4){
 # example multi object
 mut_example_multi <- hdp_multi_chain(chlist)
 
-# save to data/
-devtools::use_data(mut_example_multi, overwrite = TRUE)
-
-
+# check diagnostics
 par(mfrow=c(2,2))
 lapply(chains(mut_example_multi), plot_lik, start=1000)
 lapply(chains(mut_example_multi), plot_numcluster)
 lapply(chains(mut_example_multi), plot_data_assigned)
 
+# save to data/
+devtools::use_data(mut_example_multi, overwrite = TRUE)
 
-mut_example_multi <- hdp_extract_components(mut_example_multi)
 
-par(mfrow=c(1,1), mar=c(5, 4, 4, 2))
-plot_comp_size(mut_example_multi, bty="L")
 
-bases <- c("A", "C", "G", "T")
-trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
-                         rep(c("C", "T"), each=48),
-                         rep(bases, times=24))
-group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
-                              each=16))
-for (i in 0:(length(comp_categ_counts(mut_example_multi)) -1)) {
-  print(plot_comp_distn(mut_example_multi, comp=i, cat_names=trinuc_context,
-                        grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
-                        col_nonsig="grey80", show_group_labels=TRUE))
+##### lung, conditioned on prior signatures
+
+cosmic.sigs <- read.table('http://cancer.sanger.ac.uk/cancergenome/assets/signatures_probabilities.txt', header=TRUE, sep='\t')
+#  sort by Substitution Type and Trinucleotide
+cosmic.sigs <- cosmic.sigs[order(cosmic.sigs$Substitution.Type, cosmic.sigs$Trinucleotide),]
+sigs <- as.matrix(cosmic.sigs[,grep('Signature', colnames(cosmic.sigs))])
+# number of prior signatures to condition on (30)
+nps <- ncol(sigs)
+
+luad_prior <- hdp_prior_init(prior_distn = sigs,
+                             prior_pseudoc = rep(1000, nps),
+                             hh=rep(1, 96),
+                             alphaa=c(1, 1),
+                             alphab=c(1, 1))
+
+luad_prior <- hdp_addconparam(luad_prior,
+                              alphaa = c(1,1),
+                              alphab = c(1,1))
+
+luad_prior <- hdp_adddp(luad_prior,
+                        numdp = 101,
+                        ppindex = c(1, rep(1+nps+1, 100)),
+                        cpindex = c(3, rep(4, 100)))
+
+luad_prior <- hdp_setdata(luad_prior,
+                          dpindex = (1+nps+1)+1:100,
+                          mut_count[1:100,])
+
+chlist <- vector("list", 4)
+for (i in 1:4){
+  luad_activated <- dp_activate(luad_prior,
+                                dpindex = (1+nps+1)+0:100,
+                                initcc = nps+5,
+                                seed = i*1000)
+
+  chlist[[i]] <- hdp_posterior(luad_activated,
+                               burnin = 4000,
+                               n = 50,
+                               space = 100,
+                               cpiter = 3,
+                               seed = i*1e6)
 }
 
-plot_dp_comp_exposure(mut_example_multi, main_text="Lung adenocarcinoma",
-                      dpindices=4+(1:100),
-                      col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE, incl_comp0 = FALSE)
+luad_multi <- hdp_multi_chain(chlist)
 
-plot_dp_comp_exposure(mut_example_multi, main_text="Ovarian cancer",
-                      dpindices=104+(1:100),
-                      col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE, incl_comp0 = F)
+par(mfrow=c(2,2))
+p1 <- lapply(chains(luad_multi), plot_lik, bty='L', start=1000)
+p2 <- lapply(chains(luad_multi), plot_numcluster, bty='L')
+p3 <- lapply(chains(luad_multi), plot_data_assigned, bty='L')
 
-plot_dp_comp_exposure(mut_example_multi, main_text="Melanoma",
-                      dpindices=204+(1:100),
-                      col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE, incl_comp0 = F)
+# save to data/
+devtools::use_data(luad_multi, overwrite = TRUE)
 
-plot_dp_comp_exposure(mut_example_multi,
-                      dpindices=2:4, incl_numdata_plot=FALSE,
-                      col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=T,
-                      dpnames=c("Lung Adeno", "Ovarian", "Melanoma"))

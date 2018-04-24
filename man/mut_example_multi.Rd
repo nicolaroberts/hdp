@@ -3,21 +3,21 @@
 \docType{data}
 \name{mut_example_multi}
 \alias{mut_example_multi}
-\title{Multiple posterior sampling chains with cancer mutation data}
+\title{Posterior sampling chains with cancer mutation data}
 \format{A hdpSampleMulti object with 200 posterior samples, 50 from each chain}
 \usage{
 mut_example_multi
 }
 \description{
 Four independent HDP sampling chains with data from
-SomaticCancerAlterations package.
+SomaticCancerAlterations package, saved to \code{\link{mut_count}}.
 Categories are the 96 base substitution types defined by local trinucleotide
 content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
 carcinomas, and 100 skin cutaneous melanomas.
 Data is derived from TCGA exome-sequencing studies.
 Each sample was assigned to a unique child DP node, with one parent DP node per
 cancer type, and one grandparent DP node at the top level.
-Each chain initialised with 10 clusters, then run 4000 burn-in iterations
-before collecting 50 posterior samples with 50 iterations between each.
+Each chain initialised with 10 clusters, then run 5000 burn-in iterations
+before collecting 50 posterior samples with 200 iterations between each.
 }
 \keyword{datasets}

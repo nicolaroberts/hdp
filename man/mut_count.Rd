@@ -12,7 +12,7 @@ mut_count
 \description{
 Mutation count data from SomaticCancerAlterations package.
 Categories are the 96 base substitution types defined by local trinucleotide
-content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
+context, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
 carcinomas, and 100 skin cutaneous melanomas.
 Data is derived from TCGA exome-sequencing studies.
 }

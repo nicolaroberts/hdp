@@ -61,10 +61,10 @@ NULL
 "mut_count"
 
 
-#' Multiple posterior sampling chains with cancer mutation data
+#' Posterior sampling chains with cancer mutation data
 #'
 #' Four independent HDP sampling chains with data from
-#' SomaticCancerAlterations package.
+#' SomaticCancerAlterations package, saved to \code{\link{mut_count}}.
 #' Categories are the 96 base substitution types defined by local trinucleotide
 #' content, and the samples include 100 lung adenocarcinomas, 100 ovarian serous
 #' carcinomas, and 100 skin cutaneous melanomas.
@@ -77,3 +77,12 @@ NULL
 #' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
 "mut_example_multi"
 
+
+#' Pposterior sampling chains on lung data, conditioned on prior sigs
+#'
+#' Four independent HDP sampling chains with lung adenocarcinoma data
+#' (first 100 rows of \code{\link{mut_count}}), conditioning on a library of
+#' 30 known prior signatures from https://cancer.sanger.ac.uk/cosmic/signatures (COSMIC v84).
+#'
+#' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
+"luad_multi"
