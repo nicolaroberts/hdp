@@ -35,48 +35,32 @@ devtools::use_data(mut_count, overwrite = TRUE)
 samp_names <- rownames(mut_count)
 cancer_names <- sub('_', '', regmatches(samp_names, regexpr('^.*_', samp_names)))
 num_samp <- table(cancer_names)
-num_samp
 
 # initialise HDP
-ppindex <- c(0,
-             rep(1, 3),
-             rep(2, num_samp[1]),
-             rep(3, num_samp[2]),
-             rep(4, num_samp[3]))
-cpindex <- c(1,
-             rep(2, 3),
-             rep(3, num_samp[1]),
-             rep(4, num_samp[2]),
-             rep(5, num_samp[3]))
-hdp <- hdp_init(ppindex,
-                cpindex,
+hdp_mut <- hdp_init(ppindex = c(0, rep(1, 3), rep(2:4, each=100)),
+                cpindex = c(1, rep(2, 3), rep(3:5, each=100)),
                 hh=rep(1, 96),
                 alphaa=rep(1, 5),
                 alphab=rep(1, 5))
 
-# add data
-hdp <- hdp_setdata(hdp, 5:numdp(hdp), mut_count)
-
-# activate DPs, 10 initial components
-hdp <- dp_activate(hdp, 1:numdp(hdp), 10, seed=1)
+# add data to leaf nodes (one per cancer sample, in row order of mut_count)
+hdp_mut <- hdp_setdata(hdp_mut, 5:numdp(hdp_mut), mut_count)
 
 # multiple indep posterior sampling chains
 chlist <- vector("list", 4)
 
 for (i in 1:4){
-  chlist[[i]] <- hdp_posterior(hdp,
-                               burnin=4000,
+
+  # activate DPs, 10 initial components
+  hdp_activated <- dp_activate(hdp_mut, 1:numdp(hdp_mut), 10, seed=i*200)
+
+  chlist[[i]] <- hdp_posterior(hdp_activated,
+                               burnin=5000,
                                n=50,
-                               space=50,
+                               space=200,
                                cpiter=3,
-                               seed=i*1e4)
+                               seed=i*1e3)
 }
-
-# one example chain
-mut_example_chain <- chlist[[1]]
-
-# save to data/
-devtools::use_data(mut_example_chain, overwrite = TRUE)
 
 # example multi object
 mut_example_multi <- hdp_multi_chain(chlist)
@@ -85,48 +69,46 @@ mut_example_multi <- hdp_multi_chain(chlist)
 devtools::use_data(mut_example_multi, overwrite = TRUE)
 
 
+par(mfrow=c(2,2))
+lapply(chains(mut_example_multi), plot_lik, start=1000)
+lapply(chains(mut_example_multi), plot_numcluster)
+lapply(chains(mut_example_multi), plot_data_assigned)
 
-## lung squamous cell carcinoma, condition on previous chains
 
+mut_example_multi <- hdp_extract_components(mut_example_multi)
 
-data("lusc_tcga", package="SomaticCancerAlterations")
+par(mfrow=c(1,1), mar=c(5, 4, 4, 2))
+plot_comp_size(mut_example_multi, bty="L")
 
-lusc <- lusc_tcga[which(lusc_tcga$Variant_Type == "SNP")]
-lusc <- lusc[which(lusc$Patient_ID %in% levels(lusc$Patient_ID)[1:101])]
-mcols(lusc) <- data.frame(sampleID=paste('lusc', lusc$Patient_ID, sep='_'),
-                          ref=lusc$Reference_Allele,
-                          alt=lusc$Tumor_Seq_Allele2)
-
-remove(lusc_tcga)
-
-# tally mutation counts in 96 base substitution classes defined by trinucleotide context
-lusc_count <- nrmisc::tally_mutations_96(lusc)
-
-# remove sample with the largest burden (very different to others)
-lusc_count <- lusc_count[-which.max(rowSums(lusc_count)),]
-head(lusc_count[,1:5])
-
-# save to data/
-devtools::use_data(lusc_count, overwrite = TRUE)
-
-# run four chains off end of previous
-hdpStatelist <- lapply(chains(mut_example_multi), final_hdpState)
-chlist <- vector("list", 4)
-
-for (i in 1:4){
-  hdp <- hdpStatelist[[i]]
-  hdp <- hdp_addconparam(hdp, 1, 1)
-  hdp <- hdp_adddp(hdp, 101,
-                   ppindex=c(1, rep(305, 100)),
-                   cpindex=c(2, rep(6, 100)))
-  hdp <- hdp_setdata(hdp, 306:405, lusc_count)
-  hdp <- dp_freeze(hdp, 2:304)
-  hdp <- dp_activate(hdp, 305:405, initcc=base(hdp)@numclass, seed=i*1e5)
-
-  chlist[[i]] <- hdp_posterior(hdp, burnin=1500, n=50,
-                               space=50, cpiter=3, seed=i*1e6)
+bases <- c("A", "C", "G", "T")
+trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
+                         rep(c("C", "T"), each=48),
+                         rep(bases, times=24))
+group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
+                              each=16))
+for (i in 0:(length(comp_categ_counts(mut_example_multi)) -1)) {
+  print(plot_comp_distn(mut_example_multi, comp=i, cat_names=trinuc_context,
+                        grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set2"),
+                        col_nonsig="grey80", show_group_labels=TRUE))
 }
 
-lusc_multi <- hdp_multi_chain(chlist)
-# save to data/
-devtools::use_data(lusc_multi, overwrite = TRUE)
+plot_dp_comp_exposure(mut_example_multi, main_text="Lung adenocarcinoma",
+                      dpindices=4+(1:100),
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE, incl_comp0 = FALSE)
+
+plot_dp_comp_exposure(mut_example_multi, main_text="Ovarian cancer",
+                      dpindices=104+(1:100),
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE, incl_comp0 = F)
+
+plot_dp_comp_exposure(mut_example_multi, main_text="Melanoma",
+                      dpindices=204+(1:100),
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=FALSE, incl_comp0 = F)
+
+plot_dp_comp_exposure(mut_example_multi,
+                      dpindices=2:4, incl_numdata_plot=FALSE,
+                      col=RColorBrewer::brewer.pal(12, "Set3"),
+                      incl_nonsig=T,
+                      dpnames=c("Lung Adeno", "Ovarian", "Melanoma"))
