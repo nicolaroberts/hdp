@@ -30,8 +30,6 @@ BugReports: https://github.com/nicolaroberts/hdp/issues
 Suggests:
     testthat,
     SomaticCancerAlterations,
-    GenomicRanges,
-    Biostrings,
     RColorBrewer,
     knitr,
     rmarkdown,
