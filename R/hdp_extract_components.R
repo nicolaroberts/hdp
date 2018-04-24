@@ -256,10 +256,26 @@ hdp_extract_components <- function(x, cos.merge=0.90, min.sample=1){
   }
 
   # update clust_label vector
-  clust_label[which(!clust_label %in% use_clust)] <- 0
+  clust_label[which(!clust_label %in% use_clust)] <- '0'
   ccc_4 <- lapply(ccc_3, merge_cols, clust_label)
   cdc_4 <- lapply(cdc_3, merge_cols, clust_label)
-  clust_label <- colnames(ccc_4[[1]])
+  # if there was no component zero added, add an empty one now
+  if (!"0" %in% clust_label) {
+    ccc_4 <- lapply(ccc_4, function(x){
+      ans <- cbind(0, x)
+      colnames(ans) <- c(0, colnames(x))
+      return(ans)
+    })
+
+
+    cdc_4 <- lapply(cdc_4, function(x){
+      ans <- cbind(0, x)
+      colnames(ans) <- c(0, colnames(x))
+      return(ans)
+    })
+
+  }
+  clust_label <- colnames(cdc_4[[1]])
   if (any(clust_label != colnames(cdc_4))) stop("problem in step 4!")
 
   remove(compii, ccc_3, cdc_3, ii, lowerb, use_clust)
@@ -300,7 +316,7 @@ hdp_extract_components <- function(x, cos.merge=0.90, min.sample=1){
 
 
   # If priors,
-  # update clust_label to reflect match (down to 0.85) with prior components
+  # update clust_label to reflect match (down to 0.9) with prior components
   if (is_prior) {
 
     nco <- length(clust_label)
@@ -319,7 +335,7 @@ hdp_extract_components <- function(x, cos.merge=0.90, min.sample=1){
 
     to_match <- TRUE
     while(to_match){
-      if(!any(match2_pseudo>0.85)) {
+      if(!any(match2_pseudo>0.9)) {
         to_match <- FALSE
         break
       }
