@@ -1,7 +1,7 @@
 ---
 title: "HDP for mutational signatures analysis"
 author: "Nicola Roberts"
-date: "April 4, 2016"
+date: "April 2018"
 output: 
   BiocStyle::html_document:
     toc: true
@@ -32,54 +32,53 @@ DP nodes in a customised HDP structure) allows mutational signatures to be
 inferred both across and within groups of patients, and groups of mutations 
 within patients. Patient groups could be defined by cancer type or driver mutation
 status, while mutation groups *within* a patient could be defined by temporal or
-regional information, subclone status, etc.
+regional information, subclone status, phylogenetic branch, etc. 
 
 
-# Example: pan-cancer analysis of lung, ovarian and skin cancer
+# Example: de novo signature extraction in lung, ovarian, and skin cancers
 
 ## Tally somatic mutation categories
 
 The `r Biocexptpkg("SomaticCancerAlterations")` package contains several somatic alteration
-datasets for different cancer types. In this example, the number of somatic base
+datasets for different cancer types (exome only). In this example, the number of somatic base
 substitution mutations in each of the 96 categories defined by local trinucleotide context
-are tallied across 100 lung cancers, 100 ovarian cancers, and 100 melanomas. 
+are tallied across 100 lung cancers, 100 ovarian cancers, and 100 melanomas.  
 
-```{r loaddata, message=FALSE}
+```{r loaddata}
 library(hdp)
-library(GenomicRanges)
-
-# Lung adenocarcinoma
-data(luad_tcga, package="SomaticCancerAlterations")
-
-# Ovarian serous cystadenocarcinoma
-data(ov_tcga, package="SomaticCancerAlterations")
-
-# Skin cutaneous melanoma
-data(skcm_tcga, package="SomaticCancerAlterations")
-
-# only keep SNP type, add cancer type to sample name, and only keep
-# necessary metadata. Only keep 100 samples. Then concatenate and sort.
-for (cancer_name in c("luad", "ov", "skcm")){
-  raw <- get(paste0(cancer_name, "_tcga"))
-  snv <- raw[which(raw$Variant_Type == "SNP")]
-  snv <- snv[which(snv$Patient_ID %in% levels(snv$Patient_ID)[1:100])]
-  mcols(snv) <- data.frame(sampleID=paste(cancer_name, snv$Patient_ID, sep='_'),
-                           ref=snv$Reference_Allele,
-                           alt=snv$Tumor_Seq_Allele2)
-  assign(cancer_name, snv)
-}
-variants <- sort(c(luad, ov, skcm))
-remove(cancer_name, luad, luad_tcga, ov, ov_tcga, skcm, skcm_tcga, raw, snv)
-
-variants
-
+# library(GenomicRanges)
+# 
+# # Lung adenocarcinoma
+# data(luad_tcga, package="SomaticCancerAlterations")
+# 
+# # Ovarian serous cystadenocarcinoma
+# data(ov_tcga, package="SomaticCancerAlterations")
+# 
+# # Skin cutaneous melanoma
+# data(skcm_tcga, package="SomaticCancerAlterations")
+# 
+# # only keep SNP type, add cancer type to sample name, and only keep
+# # necessary metadata. Only keep 100 samples. Then concatenate and sort.
+# for (cancer_name in c("luad", "ov", "skcm")){
+#   raw <- get(paste0(cancer_name, "_tcga"))
+#   snv <- raw[which(raw$Variant_Type == "SNP")]
+#   snv <- snv[which(snv$Patient_ID %in% levels(snv$Patient_ID)[1:100])]
+#   mcols(snv) <- data.frame(sampleID=paste(cancer_name, snv$Patient_ID, sep='_'),
+#                            ref=snv$Reference_Allele,
+#                            alt=snv$Tumor_Seq_Allele2)
+#   assign(cancer_name, snv)
+# }
+# variants <- sort(c(luad, ov, skcm))
+# remove(cancer_name, luad, luad_tcga, ov, ov_tcga, skcm, skcm_tcga, raw, snv)
 
 # tally mutation counts in 96 base substitution classes defined by trinucleotide context
+# Could use the tally_mutations_96() function from https://github.com/nicolaroberts/nrmisc (hg19 specific)
 # bit slow - don't run. Load pre-made copy. 
 # mut_count <- nrmisc::tally_mutations_96(variants)
 dim(mut_count)
 head(mut_count[,1:5])
 tail(mut_count[,1:5])
+table(sapply(strsplit(row.names(mut_count), '_'), `[`, 1))
 ```
 
 
@@ -105,52 +104,60 @@ with hyperparameters rate=1, shape=1.
 
 ```{r inithdp}
 # initialise HDP
-ppindex <- c(0, rep(1, 3), rep(2:4, each=100))
-cpindex <- c(1, rep(2, 3), rep(3:5, each=100))
-hdp <- hdp_init(ppindex, 
-                cpindex, 
-                hh=rep(1, 96), 
-                alphaa=rep(1, 5), 
-                alphab=rep(1, 5))
+hdp_mut <- hdp_init(ppindex = c(0, rep(1, 3), rep(2:4, each=100)), # index of parental nodes
+                    cpindex = c(1, rep(2, 3), rep(3:5, each=100)), # index of concentration param
+                    hh=rep(1, 96), # prior is uniform over the 96 mutation categories
+                    alphaa=rep(1, 5), # shape hyperparams for five different CPs
+                    alphab=rep(1, 5)) # rate hyperparams for five different CPs
 
-# add data
-hdp <- hdp_setdata(hdp, 5:numdp(hdp), mut_count)
+# add data to leaf nodes (one per cancer sample, in row order of mut_count)
+hdp_mut <- hdp_setdata(hdp_mut, 
+                       dpindex = 5:numdp(hdp_mut), # index of nodes to add data to
+                       mut_count) # input data (mutation counts, sample rows match up with specified dpindex)
 
-# activate DPs, 10 initial components
-hdp <- dp_activate(hdp, 1:numdp(hdp), 10, seed=1)
-
-hdp
+hdp_mut
 
 ```
 
 ## Run multiple posterior sampling chains
 
-Run four independent posterior sampling chains with 4000 burn-in iterations,
-then collect 50 samples off each chain with 50 iterations between each. 
+For this example, I ran four independent posterior sampling chains, each separately initialised with
+10 random starting clusters, followed by 5000 burn-in iterations,
+and the collection of 50 posterior samples off each chain with 200 iterations between each. 
+For real-world analyses on larger datasets, be sure to check the diagnostic plots and
+adjust the burn-in and space parameters accordingly, usually collecting at least
+1000 posterior samples (overall) from *at least* 4 independent sampling chains. 
 
 ```{r postsamp}
 # Run four independent posterior sampling chains
 # Takes ~15 minutes - don't run. Load pre-made copy.
+
 # chlist <- vector("list", 4)
-# 
 # for (i in 1:4){
-#   chlist[[i]] <- hdp_posterior(hdp, 
-#                                burnin=4000,
+# 
+#   # activate DPs, 10 initial components
+#   hdp_activated <- dp_activate(hdp_mut, 1:numdp(hdp_mut), initcc=10, seed=i*200)
+# 
+#   chlist[[i]] <- hdp_posterior(hdp_activated,
+#                                burnin=5000,
 #                                n=50,
-#                                space=50,
-#                                cpiter=3, 
-#                                seed=i*1e4)
+#                                space=200,
+#                                cpiter=3,
+#                                seed=i*1e3)
 # }
 # 
+# # example multi object
 # mut_example_multi <- hdp_multi_chain(chlist)
 mut_example_multi
 
 par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
-p1 <- lapply(chains(mut_example_multi), plot_lik, bty="L", start=500)
+p1 <- lapply(chains(mut_example_multi), plot_lik, bty="L", start=1000)
 p2 <- lapply(chains(mut_example_multi), plot_numcluster, bty="L")
 p3 <- lapply(chains(mut_example_multi), plot_data_assigned, bty="L")
 ```
-.
+
+Always remember to check that the diagnostic plots show no strong trends over the 
+posterior samples collected! 
 
 ## Extract components (mutational signatures)
 
@@ -174,172 +181,167 @@ mut_example_multi
 par(mfrow=c(1,1), mar=c(5, 4, 4, 2))
 plot_comp_size(mut_example_multi, bty="L")
 
-bases <- c("A", "C", "G", "T")
-trinuc_context <- paste0(rep(rep(bases, times=6), each=4),
-                         rep(c("C", "T"), each=48),
-                         rep(bases, times=24))
+trinuc_context <- sapply(strsplit(colnames(mut_count), '\\.'), `[`, 4)
 group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
                            each=16))
-for (i in 0:(length(comp_categ_counts(mut_example_multi)) -1)) {
-  print(plot_comp_distn(mut_example_multi, comp=i, cat_names=trinuc_context,
-                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set1"),
-                 col_nonsig="grey80", show_group_labels=TRUE))
-}
+
+# pick your colours
+mut_colours <- c(RColorBrewer::brewer.pal(10, 'Paired')[seq(1,10,2)], 'grey70')
+
+plot_comp_distn(mut_example_multi, cat_names=trinuc_context,
+                  grouping=group_factor, col=mut_colours,
+                  col_nonsig="grey80", show_group_labels=TRUE)
 
 plot_dp_comp_exposure(mut_example_multi, main_text="Lung adenocarcinoma",
                       dpindices=4+(1:100), 
                       col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE)
+                      incl_nonsig=FALSE, 
+                      ylab_numdata = 'SNV count', ylab_exp = 'Signature exposure',
+                      leg.title = 'Signature')
 
 plot_dp_comp_exposure(mut_example_multi, main_text="Ovarian cancer",
                       dpindices=104+(1:100), 
                       col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE)
+                      incl_nonsig=FALSE,
+                      ylab_numdata = 'SNV count', ylab_exp = 'Signature exposure',
+                      leg.title = 'Signature')
 
 plot_dp_comp_exposure(mut_example_multi, main_text="Melanoma",
                       dpindices=204+(1:100), 
                       col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE)
+                      incl_nonsig=FALSE,
+                      ylab_numdata = 'SNV count', ylab_exp = 'Signature exposure',
+                      leg.title = 'Signature')
 
 plot_dp_comp_exposure(mut_example_multi,
                       dpindices=2:4, incl_numdata_plot=FALSE,
                       col=RColorBrewer::brewer.pal(12, "Set3"),
-                      incl_nonsig=FALSE,
-                      dpnames=c("Lung Adeno", "Ovarian", "Melanoma"))
+                      incl_nonsig=TRUE, cex.names=0.8,
+                      dpnames=c("Lung Adeno", "Ovarian", "Melanoma"),
+                      ylab_exp = 'Signature exposure', leg.title = 'Signature')
 ```
 
 
-# Example: lung squamous cell carcinoma, conditioned on previous dataset 
+# Example: matching lung cancers to a prior signature library, while simultaneously discovering new signatures
 
-## Tally somatic mutation categories
-
-Load dataset of mutation counts from 100 lung squamous cell carcinomas. 
-
-```{r loadlusc}
-# # bit slow - don't run. Load pre-made copy. 
-
-# data("lusc_tcga", package="SomaticCancerAlterations")
-# 
-# lusc <- lusc_tcga[which(lusc_tcga$Variant_Type == "SNP")]
-# lusc <- lusc[which(lusc$Patient_ID %in% levels(lusc$Patient_ID)[1:101])]
-# mcols(lusc) <- data.frame(sampleID=paste('lusc', lusc$Patient_ID, sep='_'),
-#                           ref=lusc$Reference_Allele,
-#                           alt=lusc$Tumor_Seq_Allele2)
-# 
-# remove(lusc_tcga)
-
-# # tally mutation counts in 96 base substitution classes defined by trinucleotide context
-
-# lusc_count <- nrmisc::tally_mutations_96(lusc)
-# # remove sample with the largest burden (very different to others)
-# lusc_count <- lusc_count[-which.max(rowSums(lusc_count)),]
-dim(lusc_count)
-head(lusc_count[,1:5])
-```
-
-
-## Extend previous HDP structure, freeze old nodes, run posterior sampling chains
-
-Condition on the final `hdpState` from the end of each previous chain by adding 
-new nodes for the lung squamous data, freezing the old nodes (except the top 
-grandparent DP node), and running additional posterior sampling chains over the 
-new nodes. 
-
-```{r addlusc}
-# # bit slow - don't run. Load pre-made copy. 
-# 
-# hdpStatelist <- lapply(chains(mut_example_multi), final_hdpState)
-# chlist <- vector("list", 4)
-# 
-# for (i in 1:4){
-#   hdp <- hdpStatelist[[i]]
-#   hdp <- hdp_addconparam(hdp, 1, 1)
-#   hdp <- hdp_adddp(hdp, 101, 
-#                    ppindex=c(1, rep(305, 100)),
-#                    cpindex=c(2, rep(6, 100)))
-#   hdp <- hdp_setdata(hdp, 306:405, lusc_count)
-#   hdp <- dp_freeze(hdp, 2:304)
-#   hdp <- dp_activate(hdp, 305:405, initcc=base(hdp)@numclass, seed=i*1e5)
-# 
-#   chlist[[i]] <- hdp_posterior(hdp, burnin=1500, n=50, 
-#                                space=50, cpiter=3, seed=i*1e6)
-# }
-# 
-# lusc_multi <- hdp_multi_chain(chlist)
-lusc_multi
-
-par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
-p1 <- lapply(chains(lusc_multi), plot_lik, bty="L")
-p2 <- lapply(chains(lusc_multi), plot_numcluster, bty="L")
-p3 <- lapply(chains(lusc_multi), plot_data_assigned, bty="L")
-```
-
-
-## Extract components
-
-```{r lusccomp, fig.width=8, fig.height=5}
-lusc_multi <- hdp_extract_components(lusc_multi)
-lusc_multi
-
-plot_comp_size(lusc_multi, bty="L")
-
-for (i in 0:(length(comp_categ_counts(lusc_multi)) -1)) {
-  print(plot_comp_distn(lusc_multi, comp=i, cat_names=trinuc_context,
-                 grouping=group_factor, col=RColorBrewer::brewer.pal(6, "Set1"),
-                 col_nonsig="grey80", show_group_labels=TRUE))
-}
-
-plot_dp_comp_exposure(lusc_multi, main_text="Lung squamous",
-                      dpindices=306:405, 
-                      col=c(RColorBrewer::brewer.pal(12, "Set3"), 'navy'),
-                      incl_nonsig=FALSE)
-
-plot_dp_comp_exposure(lusc_multi,
-                      dpindices=c(305, 2:4), incl_numdata_plot=FALSE,
-                      col=c(RColorBrewer::brewer.pal(12, "Set3"), 'navy'),
-                      incl_nonsig=FALSE,
-                      dpnames=c("Lung Squamous", "Lung Adeno", 
-                                "Ovarian", "Melanoma"))
-
-```
-
-. 
-
-
-# Example: lung squamous cell carcinoma, conditioned on signatures database
+## Initialise HDP structure
 
 Use `hdp_prior_init` to condition on previously identified signatures 
-(e.g. COSMIC database). 
+(e.g. from COSMIC database), as previously introducted in the other package vignette. 
+
+Here, I use 30 previously defined mutational signatures (available from COSMIC website)
+to define the known set of priors, with a weighting of 1000 pseudocounts on each one. 
+In practice, it may be advisable to put lower weights on prior signatures that you
+do not expect to be present in your dataset, or even exclude some priors entirely 
+(for example, there may be no need to include the UV radiation signature for cancers
+of internal organs). 
+
+After `hdp_prior_init`, I use `hdp_addconparam` to provide additional concentration
+parameters for the new dataset, and `hdp_adddp` to set up the node structure 
+for the dataset of 100 lung cancer samples, connected to their group-specific 
+parent node (itself connected to the overall grandparent node).
+The data is added via `hdp_setdata`, here using the first 100 rows of `mut_count`
+to select the lung samples from Example 1. 
 
 
-```{r prior}
+```{r setupprior}
 cosmic.sigs <- read.table('http://cancer.sanger.ac.uk/cancergenome/assets/signatures_probabilities.txt', header=TRUE, sep='\t')
 #  sort by Substitution Type and Trinucleotide
 cosmic.sigs <- cosmic.sigs[order(cosmic.sigs$Substitution.Type, cosmic.sigs$Trinucleotide),]
-sigs <- as.matrix(cosmic.sigs[,grep('Signature', colnames(cosmic.sigs))])
-prior_pseudoc <- rep(100, 30)
-lusc_prior <- hdp_prior_init(sigs, prior_pseudoc, hh=rep(1, 96),
-                             alphaa=c(1, 1), alphab=c(1, 2))
+prior_sigs <- as.matrix(cosmic.sigs[,grep('Signature', colnames(cosmic.sigs))])
+# number of prior signatures to condition on (30)
+nps <- ncol(prior_sigs)
+nps
 
-lusc_prior <- hdp_addconparam(lusc_prior, c(1,1), c(1,1))
-lusc_prior <- hdp_adddp(lusc_prior, 101,
-                  ppindex=c(1, rep(1+30+1, 100)),
-                  cpindex=c(3, rep(4, 100)))
-lusc_prior <- hdp_setdata(lusc_prior, (1+30+1)+1:100, lusc_count)
+luad_prior <- hdp_prior_init(prior_distn = prior_sigs,
+                             prior_pseudoc = rep(1000, nps),
+                             hh=rep(1, 96),
+                             alphaa=c(1, 1),
+                             alphab=c(1, 1))
+luad_prior
 
-chlist <- vector("list", 4)
-for (i in 1:4){
-      lusc_pr <- dp_activate(lusc_prior, 
-                                       (1+30+1)+0:100, initcc=30)
-      chlist[[i]] <- hdp_posterior(lusc_pr, burnin=1500, n=50, 
-                               space=50, cpiter=3, seed=i*1e6)
-}
+luad_prior <- hdp_addconparam(luad_prior,
+                              alphaa = c(1,1),
+                              alphab = c(1,1))
 
-lusc_pr_multi <- hdp_multi_chain(chlist)
-lusc_pr_ec <- hdp_extract_components(lusc_pr_multi)
+luad_prior <- hdp_adddp(luad_prior,
+                        numdp = 101,
+                        ppindex = c(1, rep(1+nps+1, 100)),
+                        cpindex = c(3, rep(4, 100)))
 
-plot_dp_comp_exposure(lusc_pr_ec, 1+30+1+(1:100), incl_nonsig = FALSE,
-                      col=rep(RColorBrewer::brewer.pal(9, "Set1"), 4))
+luad_prior <- hdp_setdata(luad_prior,
+                          dpindex = (1+nps+1)+1:100,
+                          mut_count[1:100,])
+
+luad_prior
+```
+
+## Run multiple posterior sampling chains
+
+Activate the DP nodes added via `hdp_adddp` (don't activate the frozen pseudo-count
+nodes for the prior signatures), and then run posterior sampling as usual. 
+I recommend using `initcc` (number of initialising clusters) slightly higher than
+the number of prior signatures passed in. In this way, the model initialises with
+the data spread over all provided priors plus over a few extra clusters solely comprised
+of new data observations (un-connected to the priors). 
+
+```{r sampleprior}
+# takes about 15 minutes to run - load pre-made version
+# chlist <- vector("list", 4)
+# for (i in 1:4){
+#   luad_activated <- dp_activate(luad_prior,
+#                                 dpindex = (1+nps+1)+0:100,
+#                                 initcc = nps+5,
+#                                 seed = i*1000)
+# 
+#   chlist[[i]] <- hdp_posterior(luad_activated,
+#                                burnin = 4000,
+#                                n = 50,
+#                                space = 100,
+#                                cpiter = 3,
+#                                seed = i*1e6)
+# }
+# 
+# luad_multi <- hdp_multi_chain(chlist)
+luad_multi
+
+par(mfrow=c(2,2))
+p1 <- lapply(chains(luad_multi), plot_lik, bty='L', start=1000)
+p2 <- lapply(chains(luad_multi), plot_numcluster, bty='L')
+p3 <- lapply(chains(luad_multi), plot_data_assigned, bty='L')
+```
+
+
+## Extract components (mutational signatures)
+
+When extracting components on a HDP model with prior information, 
+the components matching the provided priors (down to a cosine similarity of 0.9) 
+are labelled **P**, with the numbers reflecting the order in which the priors were provided,
+and any novel components are labelled **N**. 
+
+In this example, the lung cancer dataset is matched to prior signatures 4, 5, 1, 
+2, 13, 15, and 17, with one additional signature returned that was not provided in
+the prior set (N1). 
+
+
+```{r prior, fig.width=8, fig.height=5}
+luad_multi <- hdp_extract_components(luad_multi)
+luad_multi
+
+par(mfrow=c(1,1), mar=c(5, 4, 4, 2))
+plot_comp_size(luad_multi, bty="L")
+
+trinuc_context <- sapply(strsplit(colnames(mut_count), '\\.'), `[`, 4)
+group_factor <- as.factor(rep(c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G"),
+                              each=16))
+
+plot_comp_distn(luad_multi, cat_names=trinuc_context,
+                grouping=group_factor, col=mut_colours,
+                col_nonsig="grey80", show_group_labels=TRUE)
+
+plot_dp_comp_exposure(luad_multi, 1+nps+1+(1:100), incl_nonsig = F,
+                      col=c('black', RColorBrewer::brewer.pal(8, "Set1")))
+
 ```
 
 
