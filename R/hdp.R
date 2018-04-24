@@ -38,6 +38,16 @@ NULL
 "example_known_priors"
 
 
+#' HDP posterior samples on example data with priors
+#'
+#' Four independent posterior sampling chains for the dataset
+#' \code{\link{example_data_hdp_prior}}, conditioning on two known prior components
+#' provided in \code{\link{example_known_priors}}.
+#'
+#' @format hdpSampleMulti object
+"hdp_p"
+
+
 #' Cancer mutation count data
 #'
 #' Mutation count data from SomaticCancerAlterations package.
@@ -61,7 +71,6 @@ NULL
 #' @format A matrix of mutation counts with 100 rows (one per cancer sample)
 #'  and 96 columns (one per mutation category)
 "lusc_count"
-
 
 
 #' Posterior sampling chain with cancer mutation data
@@ -95,17 +104,3 @@ NULL
 #' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
 "mut_example_multi"
 
-
-#' Posterior sampling chains for LUSC data, conditional on previous HDP
-#'
-#' Four independent HDP sampling chains for lung squamous cell carcinoma
-#' data, conditioned on previous HDP output (mut_example_multi) for three other
-#' cancer types: lung adenocarcinoma, ovarian cancer, and melanoma.
-#' Categories are the 96 base substitution types defined by local trinucleotide
-#' content.
-#' Nodes 2:304 are frozen (old data from other cancer types),
-#' node 305 is the parent node for the LUSC samples,
-#' and nodes 306:405 hold the data for the 100 new LUSC samples.
-#'
-#' @format A hdpSampleMulti object with 200 posterior samples, 50 from each chain
-"lusc_multi"

@@ -4,10 +4,10 @@
 \alias{hdp_extract_components}
 \title{Extract major components from the raw clusters}
 \usage{
-hdp_extract_components(chains, cos.merge = 0.9, min.sample = 1)
+hdp_extract_components(x, cos.merge = 0.9, min.sample = 1)
 }
 \arguments{
-\item{chains}{hdpSampleChain or hdpSampleMulti object}
+\item{x}{hdpSampleChain or hdpSampleMulti object}
 
 \item{cos.merge}{Merge components with cosine similarity above this threshold (default 0.90)}
 
