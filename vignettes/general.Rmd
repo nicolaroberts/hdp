@@ -1,7 +1,7 @@
 ---
 title: "General introduction to the hdp package"
 author: "Nicola Roberts"
-date: "April 4, 2016"
+date: "April 2018"
 output: 
   BiocStyle::html_document: 
     toc: true
@@ -103,7 +103,7 @@ of all other data items.
 
 
 ```{r quickchain}
-quick_chain <- hdp_posterior(quick_hdp, burnin=100, n=100, space=10, seed=1234)
+quick_chain <- hdp_posterior(quick_hdp, burnin=500, n=100, space=40, seed=1234)
 quick_chain
 ```
 
@@ -133,15 +133,9 @@ plot_numcluster(quick_chain, bty="L")
 plot_data_assigned(quick_chain, bty="L")
 ```
 
-To extend the burn-in time post hoc (and consequently reduce the number of posterior
-samples included), use the function `cull_posterior_samples()`. Here, we cull the first
-20 posterior samples and effectively extend the burn-in time to 300 iterations. 
-Could then re-plot the diagnostic plots as above and see the change. 
-
-```{r cullpost}
-quick_chain_v2 <- cull_posterior_samples(quick_chain, ncull=20)
-quick_chain_v2
-```
+If the burn-in time was too short, the function `cull_posterior_samples()` throws
+away the first `ncull` posterior samples collected, effectively extending the
+burn-in time post-hoc. 
 
 
 ## Extract components from hdpSampleChain
@@ -163,32 +157,32 @@ the clusters across posterior samples and groups them into components such that:
   or sample exposure. 
 
 ```{r extract_single}
-quick_chain_v2 <- hdp_extract_components(quick_chain_v2)
-quick_chain_v2
+quick_chain <- hdp_extract_components(quick_chain)
+quick_chain
 ```
 
-Note that `quick_chain_v2` now includes component information, using two components
-to explain 95.2% of the data. 
+Note that `quick_chain` now includes component information, using two components
+to explain 96% of the data. 
 
 The following plot shows the number of data items assigned to each component 
 in each posterior sample.
 ```{r plotcompsize}
-plot_comp_size(quick_chain_v2, bty="L", lab=c(3, 5, 7))
+plot_comp_size(quick_chain, bty="L", lab=c(3, 5, 7))
 ```
 
 The following plot shows the mean distribution of data categories for each component,
 and the 95% credibility intervals (thin black lines). See `?plot_comp_distn` for more options. 
 ```{r plotcompdistn}
-par(mfrow=c(2,2), mar=c(3, 2, 2, 1))
-plot_comp_distn(quick_chain_v2, cat_names=paste0("Categ", 1:6), col="skyblue3")
+par(mfrow=c(2,2), mar=c(3, 3, 2, 1))
+plot_comp_distn(quick_chain, cat_names=paste0("Categ", 1:6), col="skyblue3")
 ```
 
 The following plots show the mean distribution of components at each specified DP node. 
 See `?plot_dp_comp_exposure` for more options.  
 ```{r plotdpexposure}
-plot_dp_comp_exposure(quick_chain_v2, dpindices=2:6, main_text="First five samples",
+plot_dp_comp_exposure(quick_chain, dpindices=2:6, main_text="First five samples",
                       col=RColorBrewer::brewer.pal(4, "Set3"))
-plot_dp_comp_exposure(quick_chain_v2, dpindices=7:11, main_text="Last five samples",
+plot_dp_comp_exposure(quick_chain, dpindices=7:11, main_text="Last five samples",
                       col=RColorBrewer::brewer.pal(4, "Set3"))
 ```
 
@@ -250,34 +244,40 @@ my_hdp <- hdp_setdata(my_hdp,
 my_hdp
 ```
 
-When initialised, the DP nodes are 'heldout' (not available for posterior
-sampling). Use `dp_activate()` to activate them and specify the number of starting clusters. 
-
-```{r activate}
-my_hdp <- dp_activate(my_hdp,
-                      dpindex=1:13,
-                      initcc=2,
-                      seed=5678)
-my_hdp
-```
-
-Now the `hdpState` object is ready for posterior sampling!
 
 ##  Run multiple posterior sampling chains
 
-Run four independent posterior sampling chains, and use `hdp_multi_chain()` to 
-store in a `hdpSampleMulti` object. 
+When initialised, the DP nodes are 'heldout' (not available for posterior
+sampling). Use `dp_activate()` to activate them and specify the number of starting clusters.
+To see the effect: 
+
+```{r activate}
+dp_activate(my_hdp, dpindex=1:13, initcc=2, seed=5678)
+```
+
+After `dp_activate`, the `hdpState` object will be ready for posterior sampling!
+
+In this example, I run four independent posterior sampling chains, 
+with different `dp_activate` seeds to start the clustering from
+a different random starting point each time. 
+At the end, use `hdp_multi_chain()` to store the results together in a
+`hdpSampleMulti` object. 
+This approach is recommended, because the variance of the solution is likely to
+be underestimated if only one posterior sampling chain is used. 
 
 ```{r runmultichain}
 chlist <- vector("list", 4)
 
 for (i in 1:4){
-  chlist[[i]] <- hdp_posterior(my_hdp, 
-                               burnin=1000,
+  
+  activated_hdp <- dp_activate(my_hdp, dpindex=1:13, initcc=2, seed=i*1e2)
+  
+  chlist[[i]] <- hdp_posterior(activated_hdp, 
+                               burnin=2500,
                                n=50,
-                               space=50,
-                               cpiter=3, 
-                               seed=i*1000)
+                               space=100,
+                               cpiter=2, 
+                               seed=i*1e4)
 }
 
 chlist[1:2]
@@ -296,16 +296,10 @@ To plot diagnostics for the constituent chains stored within a
 
 ```{r plotchainmulti, fig.width=7, fig.height=5}
 par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
-p1 <- lapply(chains(multi), plot_lik, bty="L")
-p2 <- lapply(chains(multi), plot_numcluster, bty="L")
-p3 <- lapply(chains(multi), plot_data_assigned, bty="L")
+lapply(chains(multi), plot_lik, bty="L")
+lapply(chains(multi), plot_numcluster, bty="L")
+lapply(chains(multi), plot_data_assigned, bty="L")
 ```
-
-
-Constituent chains can be dropped from a `hdpSampleMulti` object (e.g. 
-`multi@chains <- chains(multi)[-2]`) or have their burn-in time extended
-by dropping some initial samples 
-(e.g. `multi@chains[[2]] <- cull_posterior_samples(chains(multi)[[2]], 20)`). 
 
 
 ## Extract components from hdpSampleMulti
@@ -322,7 +316,7 @@ multi
 
 plot_comp_size(multi, bty="L", lab=c(3, 5, 7))
 
-par(mfrow=c(2,2), mar=c(3, 2, 2, 1))
+par(mfrow=c(2,2), mar=c(3, 3, 2, 1))
 plot_comp_distn(multi, cat_names=paste0("Categ", 1:6), col="skyblue3")
 
 par(mfrow=c(1,1))
@@ -333,10 +327,6 @@ plot_dp_comp_exposure(multi, dpindices=9:13, main_text="Last five samples",
 ```
 
 
-Note that this custom HDP structure incorporated the prior knowledge that the first
-and last set of five samples were separate groups with different distributions over the
-two underlying shared components.
-
 # Conditioning on prior knowledge
 
 To condition on prior knowledge about possible components (underlying catagorical data distributions), 
@@ -344,36 +334,74 @@ use `hdp_prior_init` to initialise a `hdpState` object with one top
 parent DP node (active) with no associated data, and one child DP node (frozen) per prior component. The frozen nodes signifying prior components 
 contain some number of pseudo-data items - use these pseudocounts to specify the relative weighting of each prior component compared to the volume of observed data. 
 
-In the following example, a toy dataset of 100 samples and 10 data categories was simulated from four underlying components. Two of these 
-underlying components are provided and input as prior information with
+In the following example, a toy dataset of 100 samples and 10 data categories was simulated from four underlying components. 
+
+```{r prior_data}
+# the dataset has 100 rows (samples) and 10 columns (data categories):
+dim(example_data_hdp_prior)
+# the two provided known priors:
+example_known_priors
+par(mfrow=c(1,2))
+barplot(example_known_priors[,1], main='Known prior 1')
+barplot(example_known_priors[,2], main='Known prior 2')
+```
+
+
+Two of these underlying components are provided and input as prior information with
 a pseudocount weighting of 1000 data items each. 
 
-Prior components are preserved by `hdp_extract_components` and are prefixed with "P". Any new components identified are prefixed with "N". 
+Prior components are preserved by `hdp_extract_components` and are prefixed with "P".
+Any new components identified are prefixed with "N". 
 
 
 ```{r prior}
-example_known_priors
-hdp <- hdp_prior_init(example_known_priors, rep(1000, 2), hh=rep(1, 10),
-             alphaa=c(1,1), alphab=c(1,1))
-hdp <- hdp_addconparam(hdp, alphaa=c(1,1), alphab=c(1,1))
-hdp <- hdp_adddp(hdp, 101, c(1, rep(4, 100)), c(3, rep(4, 100)))
-hdp <- hdp_setdata(hdp, 5:104, example_data_hdp_prior)
-hdp <- dp_activate(hdp, 4:104, initcc=4, seed=81479)
-hdp <- hdp_posterior(hdp, burnin=2000, n=50, space=50, cpiter=3, seed=1e6)
-hdp_ex <- hdp_extract_components(hdp)
-plot_comp_size(hdp_ex, bty="L")
-par(mfrow=c(2,3))
-plot_comp_distn(hdp_ex)
+# a bit slow to run (few minutes) - load pre-made copy
+# hdp_p <- hdp_prior_init(example_known_priors, rep(1000, 2), hh=rep(1, 10),
+#              alphaa=c(1,1), alphab=c(1,1))
+# hdp_p <- hdp_addconparam(hdp_p, alphaa=c(1,1), alphab=c(1,1))
+# hdp_p <- hdp_adddp(hdp_p, 101, c(1, rep(4, 100)), c(3, rep(4, 100)))
+# hdp_p <- hdp_setdata(hdp_p, 5:104, example_data_hdp_prior)
+# 
+# chlist <- vector("list", 4)
+# 
+# for (i in 1:4){
+#   
+#   activated_hdp <- dp_activate(hdp_p, dpindex=4:104, initcc=4, seed=i*1e3)
+#   
+#   chlist[[i]] <- hdp_posterior(activated_hdp, 
+#                                burnin=2500,
+#                                n=50,
+#                                space=100,
+#                                cpiter=2, 
+#                                seed=i*1e5)
+# }
+# 
+# hdp_p <- hdp_multi_chain(chlist)
+
+# loading pre-made copy
+hdp_p
+
+par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
+lapply(chains(hdp_p), plot_lik, bty="L")
+lapply(chains(hdp_p), plot_numcluster, bty="L")
+lapply(chains(hdp_p), plot_data_assigned, bty="L")
+
+
+hdp_p <- hdp_extract_components(hdp_p)
 par(mfrow=c(1,1))
-plot_dp_comp_exposure(hdp_ex, 5:104, col_comp=rainbow(5))
+plot_comp_size(hdp_p, bty="L")
+par(mfrow=c(2,2))
+plot_comp_distn(hdp_p, comp=1:4)
+par(mfrow=c(1,1))
+plot_dp_comp_exposure(hdp_p, 5:104, col_comp=RColorBrewer::brewer.pal(5, 'Purples'))
 ```
 
 
 
 # Access internal details of hdp object classes
 
-For documentation on `hdpState` objects, see `class?hdpState`. Some slots of `hdpState` 
-can be accessed like so:
+For documentation on `hdpState` objects, see `class?hdpState`. 
+Some slots of `hdpState` can be accessed like so:
 
 ```{r hdpstate}
 
@@ -419,8 +447,8 @@ activating_seed(quick_hdp)
 
 ```
 
-For documentation on `hdpSampleChain` objects, see `class?hdpSampleChain`. Some slots of `hdpSampleChain` 
-can be accessed like so:
+For documentation on `hdpSampleChain` objects, see `class?hdpSampleChain`. 
+Some slots of `hdpSampleChain` can be accessed like so:
 
 ```{r hdpsamplechain}
 
