@@ -296,9 +296,9 @@ To plot diagnostics for the constituent chains stored within a
 
 ```{r plotchainmulti, fig.width=7, fig.height=5}
 par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
-lapply(chains(multi), plot_lik, bty="L")
-lapply(chains(multi), plot_numcluster, bty="L")
-lapply(chains(multi), plot_data_assigned, bty="L")
+p1 <- lapply(chains(multi), plot_lik, bty="L")
+p2 <- lapply(chains(multi), plot_numcluster, bty="L")
+p3 <- lapply(chains(multi), plot_data_assigned, bty="L")
 ```
 
 
@@ -333,6 +333,7 @@ To condition on prior knowledge about possible components (underlying catagorica
 use `hdp_prior_init` to initialise a `hdpState` object with one top
 parent DP node (active) with no associated data, and one child DP node (frozen) per prior component. The frozen nodes signifying prior components 
 contain some number of pseudo-data items - use these pseudocounts to specify the relative weighting of each prior component compared to the volume of observed data. 
+HDP can *simultaneously* match data to known priors *and* discover any new or unspecified components. 
 
 In the following example, a toy dataset of 100 samples and 10 data categories was simulated from four underlying components. 
 
@@ -382,9 +383,9 @@ Any new components identified are prefixed with "N".
 hdp_p
 
 par(mfrow=c(2,2), mar=c(4, 4, 2, 1))
-lapply(chains(hdp_p), plot_lik, bty="L")
-lapply(chains(hdp_p), plot_numcluster, bty="L")
-lapply(chains(hdp_p), plot_data_assigned, bty="L")
+p1 <- lapply(chains(hdp_p), plot_lik, bty="L")
+p2 <- lapply(chains(hdp_p), plot_numcluster, bty="L")
+p3 <- lapply(chains(hdp_p), plot_data_assigned, bty="L")
 
 
 hdp_p <- hdp_extract_components(hdp_p)
