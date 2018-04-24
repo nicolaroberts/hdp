@@ -22,6 +22,7 @@ If components have been previously calculated for this sampling chain, they
 will be removed and must be recalculated.
 }
 \examples{
+mut_example_chain <- chains(mut_example_multi)[[2]]
 plot_lik(mut_example_chain)
 plot_numcluster(mut_example_chain)
 chain_adj <- cull_posterior_samples(mut_example_chain, 20)

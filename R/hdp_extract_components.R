@@ -15,7 +15,7 @@
 #' @import clue
 #' @export
 #' @examples
-#' hdp_extract_components(mut_example_chain)
+#' hdp_extract_components(mut_example_multi)
 hdp_extract_components <- function(x, cos.merge=0.90, min.sample=1){
 
   # input checks

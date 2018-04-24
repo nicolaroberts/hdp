@@ -22,7 +22,7 @@ preserved by \code{hdp_extract_components}, they are prefixed with "P".
 Any new components in this case are prefixed with "N".
 }
 \examples{
-hdp_extract_components(mut_example_chain)
+hdp_extract_components(mut_example_multi)
 }
 \seealso{
 \code{\link{hdp_posterior}}, \code{\link{hdp_multi_chain}},

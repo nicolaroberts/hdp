@@ -3,9 +3,10 @@
 #' @param chain A hdpSampleChain object
 #' @name plotchain
 #' @examples
-#' plot_lik(mut_example_chain, bty="L")
-#' plot_numcluster(mut_example_chain, bty="L")
-#' plot_data_assigned(mut_example_chain, bty="L")
+#' par(mfrow=c(2,2))
+#' lapply(chains(mut_example_multi), plot_lik, bty="L", start=1000)
+#' lapply(chains(mut_example_multi), plot_numcluster, bty="L")
+#' lapply(chains(mut_example_multi), plot_data_assigned, bty="L")
 NULL
 #> NULL
 
