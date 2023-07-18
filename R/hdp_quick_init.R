@@ -25,7 +25,7 @@
 hdp_quick_init <- function(data, initcc=2, alphaa=1, alphab=1){
 
   # input checks
-  if (!class(data) %in% c("matrix", "data.frame")) {
+  if (all(!class(data) %in% c("matrix", "data.frame"))) {
     stop("data must be data.frame or matrix")
   }
   if (any(data %% 1 != 0) | any(data < 0)) {
