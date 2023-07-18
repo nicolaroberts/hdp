@@ -33,7 +33,7 @@ hdp_setdata <- function(hdp, dpindex, data){
     stop("dpindex must be positive integers no greater than
          numdp(hdp) with no duplicates")
   }
-  if (!class(data) %in% c("matrix", "data.frame")) {
+  if (all(!class(data) %in% c("matrix", "data.frame"))) {
     stop("data must be data.frame or matrix")
   }
   if (nrow(data)!=length(dpindex)) stop("nrow(data) must equal length(dpindex)")
